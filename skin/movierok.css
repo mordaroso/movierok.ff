@@ -1,0 +1,31 @@
+.logo16{
+  width: 16px; 
+  height: 16px; 
+  display: block; 
+  background-image: url(chrome://movierok/skin/logo16states.png);
+  background-repeat: no-repeat; 
+}
+
+.normal{
+  
+}
+
+.disabled{
+  background-position: 0px -17px; 
+}
+
+.error{
+  background-position: 0px -34px; 
+}
+
+.add{
+  background-position: 0px -51px; 
+}
+
+#mrProgress {
+  display: none;
+}
+
+#mrError {
+  display: none;
+}

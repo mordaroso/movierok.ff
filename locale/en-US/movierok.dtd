@@ -1,0 +1,21 @@
+<!-- *************************************************************************
+	  movierok.ff
+
+	  File: en-US/movierok.dtd
+	  Description: contains the english text for the movierok extension.
+	  Author : movierok team
+	  Licence : see licence.txt
+************************************************************************** -->
+
+<!ENTITY  movierok.Movierok				"movierok">
+<!ENTITY  movierok.Website				"movierok.org Website...">
+<!ENTITY  movierok.Settings				"Settings">
+<!ENTITY  movierok.MenuItem				"movierok">
+<!ENTITY  movierok.Rescan				"Rescan moviedirs...">
+<!ENTITY  movierok.DisableMovierok		"Disable movierok">
+<!ENTITY  settings.title				"movierok Settings">
+<!ENTITY  settings.description			"Edit your movierok settings here:">
+<!ENTITY  settings.movieDirs	        "List of moviedirs:">
+<!ENTITY  settings.addMovieDir		    "Add">
+<!ENTITY  settings.removeMovieDir		"Remove">
+<!ENTITY  settings.movieplayer		    "Movie player:">

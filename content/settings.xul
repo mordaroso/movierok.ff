@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!-- *************************************************************************
+	  movierok.ff
+
+	  File: settings.xul
+	  Description: contains the xul for the settings dialog.
+	  Author : movierok team
+	  Licence : see licence.txt
+************************************************************************** -->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://movierok/locale/movierok.dtd">
+
+<dialog
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	title="&settings.title;"
+	id="mrPreferencesDialog"
+	onload="init()"
+	ondialogaccept="delayedAction = 'acceptDialog'; applyChanges()"
+	ondialogcancel="delayedAction = 'cancelDialog';"
+	buttons="accept,cancel"
+	width="600px"
+	height="400px"
+	persist="screenX screenY width height sizemode"
+	windowtype="mr:settings">
+
+	<script type="application/x-javascript" src="lib.js"/>
+	<script type="application/x-javascript" src="persistance.js"/>
+	<script type="application/x-javascript" src="moviedir.js"/>
+	<script type="application/x-javascript" src="settings.js"/>
+
+	<menupopup id="listmenu">
+		<menuitem label="Add" oncommand="addMovieDir();"/>
+		<menuitem label="Remove" oncommand="removeMovieDir();"/>
+	</menupopup>
+
+	<vbox id="entryarea">
+		<description id="introduction">
+		&settings.description;
+		</description>
+	</vbox>
+	
+	<vbox id="moviedirsbox1">
+		<label value="&settings.movieDirs;" /> 
+		<hbox id="moviedirsbox2">
+			<listbox id="moviedirList" context="listmenu" seltype="single" style="max-width: 450px; min-width: 450px;">
+			</listbox>
+			<vbox id="moviedircontrol">
+				<button label="&settings.addMovieDir;"
+					oncommand="addMovieDir();" style="max-height: 70px;"/>
+				<button label="&settings.removeMovieDir;"
+					oncommand="removeMovieDir();" style="max-height: 70px;"/>
+			</vbox>
+		</hbox>
+	</vbox>
+	
+	<vbox id="movieplayerbox" style="max-width: 450px;">
+		<label value="&settings.movieplayer;" control="movieplayer" /> 
+		<textbox id="movieplayer"/>
+	</vbox>
+</dialog>

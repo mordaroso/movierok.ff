@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!-- *************************************************************************
+	  movierok.ff
+
+	  File: movierok.xul
+	  Description: contains the xul overlay for the status bar of the browser.
+	  Author : movierok team
+	  Licence : see licence.txt
+************************************************************************** -->
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://movierok/skin/movierok.css" type="text/css"?>
+
+<!DOCTYPE window SYSTEM "chrome://movierok/locale/movierok.dtd">
+
+<overlay id="movierok-overlay"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	
+	<!-- javascripts -->
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/lib.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/persistance.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/moviedir.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/dir.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/part.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/dirparser.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/chrome.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/movieinfo.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/player.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/logger.js"/>
+	<script type="application/x-javascript"
+		src="chrome://movierok/content/omdb_suggest.js"/>
+		
+	<stringbundleset id="stringbundleset">
+		<stringbundle id="string-bundle" src="chrome://movierok/locale/errors.properties"/>
+	</stringbundleset>
+	
+	<!-- tools menu -->
+	<menupopup id="menu_ToolsPopup">
+		<menuitem id="mrSettings" label="&movierok.MenuItem;..." oncommand="MovierokChrome.showSettings();" insertafter="javascriptConsole"/>
+	</menupopup> 
+
+	<!-- statusbar overlay -->
+	<statusbar id="status-bar">
+		
+		<!-- error -->
+		<label id="mrError" /> 
+		
+		<!-- progress -->
+		<progressmeter id="mrProgress" mode="undetermined"/>
+		
+		<!-- statusbarpanel -->
+		<statusbarpanel id="mrStatusBar" context="mrStatusContextMenu" tooltiptext="movierok" style="cursor:pointer">
+			<image id="mrStatusLogo" class="logo16 normal" onmousedown="MovierokChrome.click(event)"/>
+		</statusbarpanel>
+  
+		<!-- statusbarpanel menu -->
+		<menupopup id="mrStatusContextMenu">
+			<menuitem id="mrDisabled" label="&movierok.DisableMovierok;" type="checkbox" oncommand="MovierokChrome.changeDisable();"/>
+			<menuitem label="&movierok.Settings;" oncommand="MovierokChrome.showSettings();" />
+			<menuseparator/>
+			<menuitem label="&movierok.Rescan;" oncommand="MovierokChrome.rescan();"/>
+			<menuseparator/>
+			<menuitem label="&movierok.Website;" oncommand="MovierokChrome.gotoWebsite()"/>
+		</menupopup>
+	</statusbar>
+
+</overlay>

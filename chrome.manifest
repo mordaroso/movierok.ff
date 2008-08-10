@@ -1,0 +1,4 @@
+content movierok jar:chrome/extension@movierok.org.jar!/content/
+locale	movierok	en-US		jar:chrome/extension@movierok.org.jar!/locale/en-US/
+skin	movierok	classic/1.0	jar:chrome/extension@movierok.org.jar!/skin/
+overlay chrome://browser/content/browser.xul chrome://movierok/content/movierok.xul
