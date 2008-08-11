@@ -256,14 +256,10 @@ var MovierokChrome = {
 		}
 	},
 	gotoWebsite : function() {
-        var path = "/home/mordaroso/Desktop/ed_hd.avi";
-        var file = Components.classes["@mozilla.org/file/local;1"]
-					.createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(path);
-        var movieData = MovieFile.testFile(file);
-        for(var i in movieData){
-        	mrLogger.debug(movieData[i]);
-        }
+        	// var activeWin = Application.activeWindow;
+		var url = "http://" + getPreference("remoteHost", "String");
+		// activeWin.open(toUrl(url));
+		this.openUrlToNewTab(url)
 	},
 	openUrlToNewTab : function(url) {
 		try {
