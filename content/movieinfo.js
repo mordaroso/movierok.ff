@@ -56,7 +56,6 @@ AVI.prototype = {
 	},
 	readChunk : function() {
 		if(!this.stop){
-		mrLogger.debug(this.mstream.tell());
 		var chunk_type = this.mstream.readHex(4);
 		var chunk_size = this.mstream.readLittleEndianInt();
 		if (chunk_type == this.LIST){
@@ -113,7 +112,7 @@ AVI.prototype = {
 
 					this.mstream.skip(chunk_size - 18);
 				} else {
-					mrLogger.debug("skip " + chunk_size);
+					//mrLogger.debug("skip " + chunk_size);
 					this.mstream.skip(chunk_size);
 				}
 				mrLogger.debug(strf);
@@ -208,7 +207,7 @@ AVI.prototype = {
 			}
 			default : {
 				// skip unknown chunk
-				mrLogger.debug("skip chunk: " + chunk_type);
+				//mrLogger.debug("skip chunk: " + chunk_type);
 				this.mstream.skip(chunk_size);
 				this.skipped++;
 				if (this.skipped == this.max_skipped){
@@ -419,26 +418,26 @@ MP4.prototype = {
 		}
 	},
 	readVideoEntry : function(entry_size) {
-		var video = "video entry ";
+		var video = "Video Entry ";
 		this.mstream.skip(18);
 		var width = this.mstream.readShort();
 		var height = this.mstream.readShort();
 		this.video_resolution = width + "x" + height;
-		video += "\nresolution: " + this.video_resolution;
+		video += "\nVideo Resolution: " + this.video_resolution;
 		this.mstream.skip(entry_size - 22);
 		mrLogger.debug(video);
 	},
 	readAudioEntry : function(entry_size) {
-		var audio = "audio entry";
+		var audio = "Audio Entry";
 		this.mstream.skip(10);
 
 		var channels = this.mstream.readShort();
 		var bits_per_sample = this.mstream.readShort();
 		this.mstream.skip(4);
 		var sample_rate = this.mstream.readShort();
-		audio += "\nchanels: " + channels;
-		audio += "\nbits per sample: " + bits_per_sample;
-		audio += "\nsample rate: " + sample_rate;
+		audio += "\nChannels: " + channels;
+		audio += "\nBits per Sample: " + bits_per_sample;
+		audio += "\nAudio Sample Rate: " + sample_rate;
 
 		this.audio_channels = channels;
 		this.audio_sample_rate = sample_rate;
@@ -453,7 +452,7 @@ MP4.prototype = {
 
 		if (count_entries == 1) {
 			var num_samples = this.mstream.readInt();
-			stts += "\nnum_samples: " + num_samples;
+			stts += "\nNum Samples: " + num_samples;
 			this.video_framerate = Math.floor(num_samples / this.duration);
 			this.mstream.skip(chunk_size - 20);
 		} else {
@@ -719,12 +718,13 @@ var MKV = function(mstream) {
 	this.DOCTYPE = "4282";
 	this.SEGMENT = "18538067";
     this.SEGMENT_INFO = "1549A966";
-    this.TIMECODE_SCALE = "";
-    this.DURATION = "";
+    this.TIMECODE_SCALE = "2AD7B1";
+    this.DURATION = "4489";
     this.TRACK_ENTRY = "AE";
     this.TRACKS = "1654AE6B";
     this.TRACK_TYPE = "83";
     this.CODEC_ID = "86";
+    this.CODEC_PRIVATE = "63A2";
     this.VIDEO = "E0";
     this.AUDIO = "E1";
     this.PIXEL_WIDTH = "B0";
@@ -732,6 +732,8 @@ var MKV = function(mstream) {
     this.CHANNELS = "9F";
     this.SAMPLING_FREQUENCY = "B5";
     this.BIT_DEPTH = "6264";
+    this.VORBIS_ID_HEADER = "01766F72626973";
+    this.DEFAULT_DURATION = "23E383";
 
     // local vars
     this.timecode_scale;
@@ -739,6 +741,9 @@ var MKV = function(mstream) {
     this.stop_subs = false;
     this.width = 0;
     this.height = 0;
+    this.codec_id;
+    this.time_scale = 1000000;
+    this.exact_duration;
 
 }
 
@@ -746,6 +751,7 @@ MKV.prototype = {
 	readHeader : function() {
 		this.readEBMLHeader();
 		this.getElement();
+        this.duration = Math.floor(this.duration);
 	},
 	readEBMLHeader : function() {
 		var size = this.estream.getVInt();
@@ -793,15 +799,55 @@ MKV.prototype = {
                 this.stop_subs = true;              
                 break;
             }
+            case(this.TIMECODE_SCALE):{
+                this.time_code = this.estream.getNumber(size);
+                break;            
+            }
+            case(this.DURATION):{
+                var duration = this.mstream.readFloat();
+                this.duration = (duration * this.time_scale)/1000000000;
+                mrLogger.debug("Movie Duration: "+ this.duration);
+                break;            
+            }
+            case(this.DEFAULT_DURATION):{
+                var def_duration = this.estream.getNumber(size);
+                var nbr_of_frames = this.duration / (def_duration / 1000000000);
+                this.video_framerate =  Math.floor(nbr_of_frames / this.duration);
+                mrLogger.debug("Video Framerate: "+ this.video_framerate);
+                break;            
+            }
             case(this.CODEC_ID):{
-                var codec = this.mstream.readString(size);
-                mrLogger.debug("Codec: "+ codec);
-  		        if (this.track_type == "01" || this.track_type == "03") {
-		        	//this.video_encoding = codec;
-		        }
-                if (this.track_type == "03" || this.track_type == "03"){
-                    this.audio_encoding = codec;
+                var codecid = this.mstream.readString(size);
+                
+                this.codec_id = codecid;  		        
+                if (this.track_type == "01"){
+                   this.video_encoding = codecid;
+                }                 
+                else if (this.track_type == "02"){     
+                    this.audio_encoding = MovieFile.getAudioEncoding(codecid);
+                    mrLogger.debug("Audio Codec: "+ codecid);
                 }               
+                break;
+            }
+            case(this.CODEC_PRIVATE):{
+                switch (this.codec_id){
+                    //VIDEO
+                    case("V_MS/VFW/FOURCC"):{               
+                        this.readBitmapInfoHeader(size);
+                        break;
+                    }
+                    //AUDIO
+                    case("A_VORBIS"):{
+                        this.readVorbisHeader(size);
+                        break;                    
+                    }
+                    //TODO implement more encodings....
+                    // http://haali.cs.msu.ru/mkv/codecs.pdf
+                    default:{               
+                        this.mstream.skip(size);
+                        break;
+                    }
+                }
                 break;
             }
             case(this.VIDEO):{
@@ -818,32 +864,34 @@ MKV.prototype = {
             }
             case(this.PIXEL_WIDTH):{
                 this.width = this.estream.getNumber(size);
-                mrLogger.debug("Width: "+ this.width);                
+                mrLogger.debug("Video Width: "+ this.width);                
                 break;
             }
             case(this.PIXEL_HEIGHT):{
                 this.height = this.estream.getNumber(size);
-                mrLogger.debug("Height: "+ this.height);                
+                mrLogger.debug("Video Height: "+ this.height);                
                 break;
             }
             case(this.CHANNELS):{
                 this.audio_channels = this.estream.getNumber(size);
-                mrLogger.debug("Chanels: "+ this.audio_channels);                
+                mrLogger.debug("Audio Channels: "+ this.audio_channels);                
                 break;
             }
             case(this.SAMPLING_FREQUENCY):{
-                this.audio_sample_rate = this.estream.getNumber(size);
-                mrLogger.debug("SampleRate: "+ this.audio_sample_rate);                
+                //this.audio_sample_rate = this.estream.getNumber(size);
+		this.mstream.skip(size);
+                mrLogger.debug("Audio Sample Rate: "+ this.audio_sample_rate);                
                 break;
             }
             case(this.BIT_DEPTH):{
-                this.audio_bitrate = this.estream.getNumber(size);
-                mrLogger.debug("BitRate: "+ this.audio_bitrate);                
+                //this.audio_bitrate = this.estream.getNumber(size);
+		this.mstream.skip(size);
+                mrLogger.debug("Audio Bitrate: "+ this.audio_bitrate);                
                 break;
             }
             default:{
                 this.mstream.skip(size);
-			    mrLogger.debug("skipped: \n" + id + "\nsize = " + size);
+			    //mrLogger.debug("skipped: \n" + id + "\nsize = " + size);
                 break;            
             } 
         }
@@ -854,10 +902,69 @@ MKV.prototype = {
 			this.getElement();
 		}
         if(this.stop_subs){
-            mrLogger.debug("Sub stopped");
+            // Skip Rest
             this.mstream.skip(size - (this.mstream.tell() - start));
             this.stop_subs = false;  
         }
+	},
+	readBitmapInfoHeader : function(size) {
+        var biSize = this.mstream.readLittleEndianInt();
+        var biWidth = this.mstream.readLittleEndianInt(); 
+        var biHeight = this.mstream.readLittleEndianInt();
+        var biPlanes = this.mstream.readShort();
+        var biBitCount = this.mstream.readShort();
+        var biCompression = this.mstream.readString(4);
+        var biSizeImage = this.mstream.readInt();
+        var biXPelsPerMeter = this.mstream.readInt();
+        var biYPelsPerMeter = this.mstream.readInt();
+        var biClrUsed = this.mstream.readInt();
+        var biClrImportant = this.mstream.readInt();  
+        this.video_encoding = biCompression;
+        mrLogger.debug("Video Encoding: "+biCompression);
+	},
+	readVorbisHeader : function(size) {
+        var start = this.mstream.tell();
+        // get nbr of frames    
+        var lacingHead = this.mstream.readByte();
+        //  get frame sizes        
+        var lacingSize = new Array();
+        var totalSize = 0;
+        for(var i = 0; i < lacingHead; i++){
+            var tmpByte;
+            lacingSize[i] = 0;           
+            do{
+                tmpByte = this.mstream.readByte();
+                lacingSize[i] += tmpByte;
+            }
+            while(tmpByte == 255);
+            totalSize += lacingSize[i];
+        }
+        lacingSize[i++] = size - (this.mstream.tell() - start + totalSize);
+        // get frames
+        for(var j = 0; j < i; j++){
+            var start = this.mstream.tell();
+            var frameId = this.mstream.readHex(7);
+            switch(frameId){                           
+                case(this.VORBIS_ID_HEADER):{
+                    var version = this.mstream.readInt();
+                    var channels = this.mstream.readByte();
+                    var audioSampleRate = this.mstream.readLittleEndianInt();
+                    var bitrateMax = this.mstream.readLittleEndianInt();
+                    var bitrateNorm = this.mstream.readLittleEndianInt();
+                    var bitrateMin = this.mstream.readLittleEndianInt();
+                    var blockSizes = this.mstream.readByte();
+                    var framingFlag = this.mstream.readByte();
+                    this.audio_channels = channels;
+                    this.audio_sample_rate = audioSampleRate;
+                    this.audio_bitrate = bitrateNorm;
+                    mrLogger.debug("Audio Channels: "+this.audio_channels);
+                    mrLogger.debug("Audio Sample Rate: "+this.audio_sample_rate);
+                    mrLogger.debug("Audio Bitrate: "+this.audio_bitrate);
+                }
+            }            
+            this.mstream.skip(lacingSize[j]-(this.mstream.tell() - start));
+        }        
+        this.mstream.skip(size-(this.mstream.tell()-start));
 	}
 }
 
@@ -866,29 +973,42 @@ MKV.prototype = {
  */
 var MovieFile = {
 	getObjectByFile : function(file) {
-		var mstream = new ExtendedFileStream(file);
-		var magicNumber = mstream.readHex(4);
-		var ending = file.path.split(".");
-		ending = ending[ending.length - 1];
-		var format_number = movie_format_number.getItem(magicNumber);
-		var format_ending = movie_format_ending.getItem(ending);
-		var format_file;
-		if (format_number != null) {
-			// check magic number
-			format_file = new format_number(mstream);
-
-		} else if (format_ending != null) {
-			// check ending
-			format_file = new format_ending(mstream);
-
-		} else {
-			mrLogger.debug("unknown movie file: MagicNumber[" + magicNumber
-					+ "] ending[" + ending + "]");
-			throw ("unknown movie type")
-		}
-		format_file.size = file.fileSize;
-		format_file.readHeader();
-		mstream.close();
+	mrLogger.debug("Start reading movieinfo from '"+file.path+"'")
+        var format_file; 
+        var mstream;       
+        try{
+            mstream = new ExtendedFileStream(file);
+            // get Magic Number from file (the first 4 bytes) to identify file type
+	    var magicNumber = mstream.readHex(4);
+            // get file extension for second identification		    
+            var extension = file.path.split(".");
+	    extension = extension[extension.length - 1];
+            // get the Classes by MagicNumber and file extension
+		    var format_number = movie_format_number.getItem(magicNumber);
+		    var format_ending = movie_format_ending.getItem(extension);
+		    
+		    if (format_number != null) {
+			    // check magic number
+			    format_file = new format_number(mstream);
+		    } else if (format_ending != null) {
+		    	// check ending
+		    	format_file = new format_ending(mstream);
+		    } else {
+                // movie file type is unkwnown / not implemented
+			    throw ("unknown movie file: MagicNumber[" + magicNumber
+				    	+ "] file extension[" + extension + "]")
+		    }
+            // set the size of file
+    	    format_file.size = file.fileSize;
+            // start to read header => file type specific
+		    format_file.readHeader();
+        }catch(exc){
+            mrLogger.debug("Reading movieinfo failed with Exception:\n"+exc)
+            format_file = null;
+        }finally{
+            if(mstream != null)
+                mstream.close();
+        }
 		return format_file;
 	},
 	getAudioEncoding : function(encodingId){		
@@ -904,7 +1024,6 @@ var MovieFile = {
 		for (var param in format_file) {
 			mrLogger.debug(param + ": " + format_file[param]);
 		}
-		alert("finished");
 	}
 
 }
@@ -1247,7 +1366,9 @@ ExtendedFileStream.prototype = {
 
 		return parseInt("0x" + hex);
 	},
-
+    readFloat : function() {
+		return this.bstream.readFloat();
+	},
 	readLong : function() {
 		return this.bstream.read64();
 	},

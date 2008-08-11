@@ -423,12 +423,10 @@ DirParser.prototype = {
 			var file = Components.classes["@mozilla.org/file/local;1"]
 					.createInstance(Components.interfaces.nsILocalFile);
 			file.initWithPath(part.path);
-			try {
-				var movieData = MovieFile.getObjectByFile(file);
-				this.incompleteParts.push(new Array(check_sum, movieData));
-			} catch (exc) {
-				mrLogger.debug(exc);
-			}
+            			
+		    var movieData = MovieFile.getObjectByFile(file);
+            if (movieData !== null)				
+                this.incompleteParts.push(new Array(check_sum, movieData));
 		}
 	},
 	handleIncomplete : function(event) {
