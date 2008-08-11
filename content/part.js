@@ -60,7 +60,6 @@ Part.prototype = {
 
 		var movieDirPath = "";
 		while (statement.executeStep()) {
-			mrLogger.debug(statement.getString(0));
 			movieDirPath = statement.getString(0);
 		}
 		statement.reset();
