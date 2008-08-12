@@ -12,7 +12,8 @@
 // Logger Class
 // param String level - loglevel
 // param boolean saveToFile - save to file?
-var MRLogger = function(level, saveToFile) {
+// param String fileName - name of the logfile.
+var MRLogger = function(level, saveToFile, fileName) {
 	// log level (debug - error)
 	switch (level) {
 		case ("debug") :
@@ -38,8 +39,7 @@ var MRLogger = function(level, saveToFile) {
 	// saving to file?
 	this.saveToFile = saveToFile;
 	// set filename
-	this.fileName = "movierok.log";
-
+    this.fileName = fileName;
 };
 
 MRLogger.prototype = {

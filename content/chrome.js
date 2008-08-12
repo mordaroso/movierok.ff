@@ -17,8 +17,7 @@ window.addEventListener("load", init, true);
 
 function init() {
 	stringsBundle = document.getElementById("string-bundle");
-	mrLogger = new MRLogger(getPreference("logLevel", "String"), getPreference(
-			"logToFile", "boolean"));
+	mrLogger = new MRLogger(getPreference("logLevel", "String"), getPreference("logToFile", "boolean"), "movierok.log");
 	if (getPreference("enabled", "boolean") == false) {
 		MovierokChrome.setStatus("disabled");
 	}
@@ -276,8 +275,7 @@ var MovierokChrome = {
 		}
 	},
 	showSettings : function() {
-		window.open("chrome://movierok/content/settings.xul", "mr_settings",
-				"chrome");
+		var config = window.open("chrome://movierok/content/settings.xul", "mr_settings","modal,dialog");
 	},
 	update : function() {
 		this.doParse(false, false);
