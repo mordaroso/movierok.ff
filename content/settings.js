@@ -12,6 +12,10 @@ var removeMovieDirs = [];
 var moviedirs;
 function init() {
 	try {
+        //center
+        //document.getElementById("mrPreferencesDialog").centerWindowOnScreen();
+
+        // get moviedirs
 		var list = document.getElementById("moviedirList");
 
 		moviedirs = MovieDirController.getAllMovieDirs();
@@ -19,9 +23,21 @@ function init() {
 			list.appendItem(moviedirs[i].path, i);
 		}
 
+        // get player
 		var movieplayer = document.getElementById("movieplayer");
 		var player = getPreference("player", "String");
 		movieplayer.value = player;
+
+        // get autoUpdate
+        var enableUpdates = document.getElementById("enableUpdate");
+        var isUpdating = getPreference("autoUpdate", "boolean");
+        enableUpdates.checked = isUpdating;
+        refreshUpdate();
+
+        // get idleTime
+        var idleTime = document.getElementById("idleTime");
+        var time = getPreference("idleTime", "int");
+        idleTime.value = time;
 	} catch (exc) {
 		alert(exc);
 	}
@@ -39,8 +55,18 @@ function applyChanges() {
 			moviedir.remove();
 			changed = true;
 		}
-		var movieplayer = document.getElementById("movieplayer");
+		// player
+        var movieplayer = document.getElementById("movieplayer");
 		setPreference("player", movieplayer.value, "String");
+
+        // autoupdate
+        var enableUpdates = document.getElementById("enableUpdate");
+        setPreference("autoUpdate",enableUpdates.checked, "boolean");
+
+        // idletime
+        var idleTime = document.getElementById("idleTime");
+        setPreference("idleTime",idleTime.value, "int");
+
 		if(changed){
 			window.opener.MovierokChrome.rescan();
 		}
@@ -70,5 +96,13 @@ function removeMovieDir() {
 	if (value != -1)
 		removeMovieDirs.push(moviedirs[value]);
 	list.removeItemAt(list.selectedIndex);
+}
+
+function refreshUpdate(){
+    var enableUpdates = document.getElementById("enableUpdate");
+    document.getElementById("lblUpdateBefore").disabled = !enableUpdates.checked;
+    document.getElementById("idleTime").disabled = !enableUpdates.checked;
+    document.getElementById("lblUpdateAfter").disabled = !enableUpdates.checked;
+
 
 }

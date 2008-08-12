@@ -1,31 +1,39 @@
 .logo16{
-  width: 16px; 
-  height: 16px; 
-  display: block; 
-  background-image: url(chrome://movierok/skin/movierok_states_16x16.png);
-  background-repeat: no-repeat; 
+    width: 16px;
+    height: 16px;
+    display: block;
+    background: url(chrome://movierok/skin/movierok_states_16x16.png) no-repeat;
 }
 
 .normal{
-  
+
+}
+
+#title{
+    font-size: 20px;
+    font-style: bold;
+    background: url(chrome://movierok/skin/icon.png) no-repeat;
+    height: 35px;
+    padding-top: 10px;
+    padding-left: 35px;
 }
 
 .disabled{
-  background-position: 0px -17px; 
+    background-position: 0px -17px;
 }
 
 .error{
-  background-position: 0px -34px; 
+    background-position: 0px -34px;
 }
 
 .add{
-  background-position: 0px -51px; 
+    background-position: 0px -51px;
 }
 
 #mrProgress {
-  display: none;
+    display: none;
 }
 
 #mrError {
-  display: none;
+    display: none;
 }

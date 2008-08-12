@@ -7,15 +7,20 @@
 	  Licence : see licence.txt
 ************************************************************************** -->
 
-<!ENTITY  movierok.Movierok				"movierok">
-<!ENTITY  movierok.Website				"movierok.org Website...">
-<!ENTITY  movierok.Settings				"Settings">
-<!ENTITY  movierok.MenuItem				"movierok">
-<!ENTITY  movierok.Rescan				"Rescan moviedirs...">
-<!ENTITY  movierok.DisableMovierok		"Disable movierok">
-<!ENTITY  settings.title				"movierok Settings">
-<!ENTITY  settings.description			"Edit your movierok settings here:">
-<!ENTITY  settings.movieDirs	        "List of moviedirs:">
-<!ENTITY  settings.addMovieDir		    "Add">
-<!ENTITY  settings.removeMovieDir		"Remove">
-<!ENTITY  settings.movieplayer		    "Movie player:">
+<!ENTITY  movierok.Movierok		"movierok">
+<!ENTITY  movierok.Website		"movierok.org Website...">
+<!ENTITY  movierok.Settings		"Settings">
+<!ENTITY  movierok.MenuItem		"movierok">
+<!ENTITY  movierok.Rescan		"Rescan moviedirs...">
+<!ENTITY  movierok.DisableMovierok	"Disable movierok">
+<!ENTITY  settings.title		"movierok Settings">
+<!ENTITY  settings.description		"movierok Settings">
+<!ENTITY  settings.movieDirs		"Folders">
+<!ENTITY  settings.movieDirsHelp	"Add your movie folders here to add the containing movies to movierok">
+<!ENTITY  settings.addMovieDir		"Add">
+<!ENTITY  settings.removeMovieDir	"Remove">
+<!ENTITY  settings.moviePlayer		"Movie Player">
+<!ENTITY  settings.pathToPlayer		"Path to Player:">
+<!ENTITY  settings.updateBefore         "Update my rips after">
+<!ENTITY  settings.updateAfter          "minutes in Idle">
+<!ENTITY  settings.autoUpdate           "Auto Update">
