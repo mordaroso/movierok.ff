@@ -16,7 +16,7 @@
 <!ENTITY  settings.title		"movierok Settings">
 <!ENTITY  settings.description		"movierok Settings">
 <!ENTITY  settings.movieDirs		"Folders">
-<!ENTITY  settings.movieDirsHelp	"Add your movie folders here to add the containing movies to movierok">
+<!ENTITY  settings.movieDirsHelp	"Add your movie folders here to let movierok parse them for movies">
 <!ENTITY  settings.addMovieDir		"Add">
 <!ENTITY  settings.removeMovieDir	"Remove">
 <!ENTITY  settings.moviePlayer		"Movie Player">

@@ -18,8 +18,8 @@
 	ondialogaccept="delayedAction = 'acceptDialog'; applyChanges()"
 	ondialogcancel="delayedAction = 'cancelDialog';"
 	buttons="accept,cancel"
-	width="300px"
-	height="450px"
+	width="400px"
+	height="600px"
 
 	persist="screenX screenY"
 	windowtype="mr:settings">
@@ -43,7 +43,7 @@
 	<groupbox id="gboxMoviedirs">
 		<caption label="&settings.movieDirs;" />
 		<hbox id="hboxMoviedirs">
-			<listbox id="moviedirList" context="listmenu" seltype="single" />
+			<listbox id="moviedirList" context="listmenu" seltype="single"  style="width:350px"/>
 			<vbox id="moviedircontrol">
 				<button id="btnAdd" label="&settings.addMovieDir;" oncommand="addMovieDir();" />
 				<button id="btnRemove" label="&settings.removeMovieDir;" oncommand="removeMovieDir();"/>
