@@ -735,6 +735,13 @@ var MKV = function(mstream) {
     this.VORBIS_ID_HEADER = "01766F72626973";
     this.DEFAULT_DURATION = "23E383";
 
+    // Encodings
+    this.VIDEO_VCM = "V_MS/VFW/FOURCC";
+    this.VIDEO_MP4_ASP = "V_MPEG4/ISO/ASP";
+    this.VIDEO_MP4_AVC = "V_MPEG4/ISO/AVC";
+    this.AUDIO_VORBIS = "A_VORBIS";
+    this.AUDIO_AC3 = "A_AC3";
+
     // local vars
     this.timecode_scale;
     this.track_type;
@@ -810,10 +817,15 @@ MKV.prototype = {
                 break;            
             }
             case(this.DEFAULT_DURATION):{
-                var def_duration = this.estream.getNumber(size);
-                var nbr_of_frames = this.duration / (def_duration / 1000000000);
-                this.video_framerate =  Math.floor(nbr_of_frames / this.duration);
-                mrLogger.debug("Video Framerate: "+ this.video_framerate);
+                if(this.track_type == "01") {               
+                    var def_duration = this.estream.getNumber(size);
+                    var nbr_of_frames = this.duration / (def_duration / 1000000000);
+                    this.video_framerate =  Math.floor(nbr_of_frames / this.duration);
+                    mrLogger.debug("Video Framerate: "+ this.video_framerate);
+                }
+                else{
+                    this.mstream.skip(size);
+                }                
                 break;            
             }
             case(this.CODEC_ID):{
@@ -821,23 +833,24 @@ MKV.prototype = {
                 
                 this.codec_id = codecid;  		        
                 if (this.track_type == "01"){
-                   this.video_encoding = codecid;
+                    this.video_encoding = MovieFile.getVideoEncoding(codecid);
+                    mrLogger.debug("Video CodecID: "+ codecid);
                 }                 
                 else if (this.track_type == "02"){     
                     this.audio_encoding = MovieFile.getAudioEncoding(codecid);
-                    mrLogger.debug("Audio Codec: "+ codecid);
+                    mrLogger.debug("Audio CodecID: "+ codecid);
                 }               
                 break;
             }
             case(this.CODEC_PRIVATE):{
                 switch (this.codec_id){
                     //VIDEO
-                    case("V_MS/VFW/FOURCC"):{               
+                    case(this.VIDEO_VCM):{               
                         this.readBitmapInfoHeader(size);
                         break;
                     }
                     //AUDIO
-                    case("A_VORBIS"):{
+                    case(this.AUDIO_VORBIS):{
                         this.readVorbisHeader(size);
                         break;                    
                     }
@@ -858,8 +871,8 @@ MKV.prototype = {
                 break;
             }
             case(this.AUDIO):{
-                mrLogger.debug("Audio: \nsize = " + size);
-                this.readSubElements(size);                
+                mrLogger.debug("Audio: \nsize = " + size);       
+                this.readSubElements(size);                   
                 break;
             }
             case(this.PIXEL_WIDTH):{
@@ -878,14 +891,13 @@ MKV.prototype = {
                 break;
             }
             case(this.SAMPLING_FREQUENCY):{
-                //this.audio_sample_rate = this.estream.getNumber(size);
-		this.mstream.skip(size);
+                this.audio_sample_rate = this.mstream.readFloat();
                 mrLogger.debug("Audio Sample Rate: "+ this.audio_sample_rate);                
                 break;
             }
             case(this.BIT_DEPTH):{
                 //this.audio_bitrate = this.estream.getNumber(size);
-		this.mstream.skip(size);
+		        this.mstream.skip(size);
                 mrLogger.debug("Audio Bitrate: "+ this.audio_bitrate);                
                 break;
             }
@@ -946,6 +958,7 @@ MKV.prototype = {
             var frameId = this.mstream.readHex(7);
             switch(frameId){                           
                 case(this.VORBIS_ID_HEADER):{
+                    // read vorbis identification header
                     var version = this.mstream.readInt();
                     var channels = this.mstream.readByte();
                     var audioSampleRate = this.mstream.readLittleEndianInt();
@@ -1019,6 +1032,14 @@ var MovieFile = {
 			return null;
 		}
 	},
+	getVideoEncoding : function(encodingId){		
+		if(video_encoding.hasItem(encodingId)){
+			return video_encoding.getItem(encodingId);
+		}else{
+			mrLogger.debug("Audio Encoding '"+ encodingId +"' is unknown");		
+			return null;
+		}
+	},
 	testFile : function(file) {
 		var format_file = this.getObjectByFile(file);
 		for (var param in format_file) {
@@ -1033,9 +1054,9 @@ var movie_format_number = new Hash( // magic number
 		"000001BA", MPEG, // MPEG (video)
 		"52494646", AVI, // RIFF (WAV / audioAVI / video)
 		"1A45DFA3", MKV, // Matroska mkv
-		"4F676753", null, // Ogg media ogm
+		"4F676753", null, //TODO Ogg media ogm
 		"00000018", MP4, // MP4 media ogm mov
-		"3026B275", null // WMV media wmv asf
+		"3026B275", null //TODO WMV media wmv asf
 );
 
 var movie_format_ending = new Hash( // file ending
@@ -1045,6 +1066,23 @@ var movie_format_ending = new Hash( // file ending
 		"mpg", MPEG,// MPEG (video)
 		"avi", AVI, // RIFF (WAV / audioAVI / video)
 		"mkv", MKV // Matroska mkv
+);
+
+var video_encoding = new Hash(//
+        "V_MS/VFW/FOURCC", "VCM", //
+        "V_UNCOMPRESSED", "", //
+        "V_MPEG4/ISO/SP", "DivX4", //
+        "V_MPEG4/ISO/ASP", "DivX5, XviD, FFMPEG", //
+        "V_MPEG4/ISO/AP", "MPEG4", //
+        "V_MPEG4/MS/V3", "MPEG4 V3", //
+        "V_MPEG1", "MPEG1", //
+        "V_MPEG2" , "MPEG1", //
+        "V_REAL/RV10" , "RealVideo 1.0", //
+        "V_REAL/RV20" , "RealVideo G2", //
+        "V_REAL/RV30" , "RealVideo 8", //
+        "V_REAL/RV40" , "RealVideo 9", //
+        "V_QUICKTIME" , "QuickTime", //
+        "V_THEORA" , "Theora" //
 );
 
 var audio_encoding = new Hash(//
@@ -1212,6 +1250,7 @@ var audio_encoding = new Hash(//
 		"A_REAL/SIPR", "Real Sipro",//
 		"A_REAL/RALF", "Real 1",//
 		"A_REAL/ATRC", "Real 1",//
+        "A_AAC", "MPEG4",//
 		"A_AAC/MPEG2/MAIN", "MPEG2 MP",//
 		"A_AAC/MPEG2/LC", "MPEG2 LC",//
 		"A_AAC/MPEG2/SSR", "MPEG2 SSR",//
@@ -1220,6 +1259,13 @@ var audio_encoding = new Hash(//
 		"A_AAC/MPEG4/SSR", "MPEG4 MP",//
 		"A_AAC/MPEG4/LTP", "MPEG4 LTP",//
 		"A_AAC/MPEG4/SBR", "MPEG4 SBR",//
+        "A_QUICKTIME/QDMC", "QDesign Music",//
+        "A_QUICKTIME/QDM2", "QDesign Music v2",//
+        "A_MS/ACM", "ACM", //
+        "A_FLAC", "FLAC", //
+        "A_MPC", "musepack SV8", //
+        "A_TTA1", "The True Audio",
+        "A_WAVPACK4","WavPack", //
 		"Vorbis", "Vorbis"//
 );
 

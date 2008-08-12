@@ -163,7 +163,6 @@ DirParser.prototype = {
 			var parts = nativeJSON.decode(response);
 
 			for (var i = 0; i < parts.length; i++) {
-				//mrLogger.debug("checksum on remote: " + parts[i].check_sum);
 				part = new Part();
 				part.checksum = parts[i].check_sum;
 				this.oldParts.setItem(parts[i].check_sum, part);
@@ -366,10 +365,10 @@ DirParser.prototype = {
 					xmlText += "<part>";
 					xmlText += "<check-sum>" + check_sum + "</check-sum>";
 
-                    // VIDEO		
+                    // VIDEO
                     if (mfile.video_encoding != null)
 						xmlText += "<video_encoding>" + mfile.video_encoding
-								+ "</video_encoding>";			
+								+ "</video_encoding>";
                     if (mfile.video_framerate != null)
 						xmlText += "<video_frame_rate>" + mfile.video_framerate
 								+ "</video_frame_rate>";
@@ -382,14 +381,14 @@ DirParser.prototype = {
 					if (mfile.audio_encoding != null)
 						xmlText += "<audio_encoding>" + mfile.audio_encoding
 								+ "</audio_encoding>";
-                    if (mfile.audio_bitrate != null)						
+                    if (mfile.audio_bitrate != null)
                         xmlText += "<audio_bit_rate>" + mfile.audio_bitrate
 								+ "</audio_bit_rate>";
-                    if (mfile.audio_bitrate != null)						
+                    if (mfile.audio_sample_rate != null)
                         xmlText += "<audio_sample_rate>"
 								+ mfile.audio_sample_rate
 								+ "</audio_sample_rate>";
-                    if (mfile.audio_bitrate != null)
+                    if (mfile.audio_channels != null)
 						xmlText += "<audio_channels>" + mfile.audio_channels
 								+ "</audio_channels>";
 
@@ -423,9 +422,9 @@ DirParser.prototype = {
 			var file = Components.classes["@mozilla.org/file/local;1"]
 					.createInstance(Components.interfaces.nsILocalFile);
 			file.initWithPath(part.path);
-            			
+
 		    var movieData = MovieFile.getObjectByFile(file);
-            if (movieData !== null)				
+            if (movieData !== null)
                 this.incompleteParts.push(new Array(check_sum, movieData));
 		}
 	},
