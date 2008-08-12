@@ -135,7 +135,7 @@ var PartController = {
 		return result;
 	},
 	findOrInitializeByChecksum : function(file) {
-		var checksum = QuickFileHasher.getFileHash(file);
+		var checksum = MRokHasher.getFileHash(file);
 		var sql = "SELECT id, dir, path, checksum FROM parts WHERE checksum = ?1";
 		var statement = MRData.dbConnection().createStatement(sql);
 		statement.bindUTF8StringParameter(0, checksum);

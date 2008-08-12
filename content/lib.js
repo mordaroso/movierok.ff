@@ -160,7 +160,7 @@ Hash = function() {
 	}
 }
 
-var QuickFileHasher = {
+var MRokHasher = {
 	getFileHash : function(file) {
 		return this.getMiddleBytes(file) + this.getShortSize(file);
 	},
