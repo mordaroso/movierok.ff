@@ -53,7 +53,7 @@ var Player = {
 		var players = new Array();
 		// Priority in order of appearance
 		players.push("/usr/bin/vlc");
-        players.push("/usr/share/totem");
+        players.push("/usr/bin/totem");
 		// TODO add more programs
 		return players;
 	},

@@ -26,7 +26,7 @@ function init() {
 		setPreference("player", Player.getDefalutPlayer(), "String");
 		mrLogger.debug("new player is set");
 	}
-	checkVersion();
+	Version.check();
 }
 
 function initMovierokEvents() {
@@ -54,27 +54,6 @@ function initMovierokEvents() {
 	}
 }
 
-function checkVersion() {
-	var ver = "-1", firstrun = true;
-	var current = getVersion();
-	try {
-		ver = getPreference("version", "String");
-		firstrun = getPreference("firstrun", "boolean");
-	} catch (e) {
-	} finally {
-		if (firstrun) {
-			setPreference("firstrun", false, "boolean");
-			setPreference("version", current, "String");
-			mrLogger.info("movierok extension successfully installed");
-			MovierokChrome.showSettings();
-		}
-		if (ver != current && !firstrun) {
-			setPreference("version", current, "String");
-			mrLogger.info("movierok extension successfully updated");
-		}
-	}
-}
-
 function pageShow(event) {
 	try {
 		var doc = event.target;
@@ -82,7 +61,7 @@ function pageShow(event) {
 		if (doc.location.host == remote) {
 			mrLogger.debug("remote page visited");
 			changePlayLinks(doc);
-			changeChecksums(doc);
+			changeToMRokHash(doc);
 			var rips = doc.getElementById("rips");
 			if (rips)
 				events.push(rips.addEventListener("DOMNodeInserted",
@@ -121,39 +100,39 @@ function changePlayLinks(doc) {
 	mrLogger.debug(i + " play buttons added");
 }
 
-function changeChecksums(doc) {
-	var elements = getElementsByClassName(doc, '*', 'check_sum');
+function changeToMRokHash(doc) {
+	var elements = getElementsByClassName(doc, '*', 'mrokhash');
 	var i = 0;
 	for (; i < elements.length; i++) {
 		appendFileName(elements[i]);
 	}
 	changePlayLinks(doc);
-	mrLogger.debug(i + " checksums changed to path");
+	mrLogger.debug(i + " mrhashes changed to path");
 }
 
 function appendFileName(element) {
-	var checksum = element.innerHTML;
+	var mrokhash = element.innerHTML;
 	var filter = /^[a-zA-Z0-9]*$/;
-	if (filter.test(checksum)) {
+	if (filter.test(mrokhash)) {
 
-		var part = PartController.findByChecksum(checksum);
+		var part = PartController.findByMRokHash(mrokhash);
 		if (part != null) {
 			element.className = "filename";
 			element.innerHTML = part.getShortPath()
-					+ "<div class =\"play_link\">" + checksum + "</div>";
+					+ "<div class =\"play_link\">" + mrokhash + "</div>";
 		}
 	}
 }
 
 function appendPlayButton(element) {
-	var checksums = element.innerHTML;
+	var mrokhashes = element.innerHTML;
 	var filter = /^[a-zA-Z0-9\+]*$/;
-	if (filter.test(checksums)) {
-		var sums = checksums.split('+');
+	if (filter.test(mrokhashes)) {
+		var sums = mrokhashes.split('+');
 
 		for (var i = 0; i < sums.length; i++) {
-			if (PartController.findByChecksum(sums[i]) != null) {
-				element.innerHTML = "<a href='#' alt='" + checksums
+			if (PartController.findByMRokHash(sums[i]) != null) {
+				element.innerHTML = "<a href='#' alt='" + mrokhashes
 						+ "' title='play' >&nbsp;</a>";
 				element.style.display = 'inline';
 				element.addEventListener("click", play, true);
@@ -171,11 +150,11 @@ function play(event) {
 		return false
 	last_played = new Date().getTime()
 
-	var checksums = event.currentTarget.lastChild.getAttribute("alt");
-	var sums = checksums.split('+');
+	var mrokhashes = event.currentTarget.lastChild.getAttribute("alt");
+	var sums = mrokhashes.split('+');
 	var arguments = new Array();
 	for (var i = 0; i < sums.length; i++) {
-		var part = PartController.findByChecksum(sums[i]);
+		var part = PartController.findByMRokHash(sums[i]);
 		if (part != null) {
 			arguments.push(part.path);
 		}
@@ -200,8 +179,8 @@ var MovierokChrome = {
 					.setAttribute("value", percent);
 		}
 	},
-	setError : function(error) {
-		document.getElementById("mrError").value = error;
+    setText : function(text) {
+		document.getElementById("mrInfo").value = text;
 	},
 	setStatus : function(state) {
 		switch (state) {
@@ -216,22 +195,34 @@ var MovierokChrome = {
 				this.style = "add";
 				document.getElementById("mrProgress").setAttribute("style",
 						"display:block");
+                document.getElementById("mrRescan").setAttribute("style",
+						"display:none");
+                document.getElementById("mrStopParser1").setAttribute("style",
+						"display:block");
+                document.getElementById("mrStopParser2").setAttribute("style",
+						"display:block");
 				break;
 			}
 			case ("endparsing") : {
-				if (this.style != "error")
+				if (this.style != "error"){
 					if (getPreference("enabled", "boolean") == false)
 						this.style = "disabled";
 					else
 						this.style = "normal";
+                    MovierokChrome.setText("");
+                }
 				document.getElementById("mrProgress").setAttribute("style",
+						"display:none");
+                document.getElementById("mrRescan").setAttribute("style",
+						"display:block");
+                document.getElementById("mrStopParser1").setAttribute("style",
+						"display:none");
+                document.getElementById("mrStopParser2").setAttribute("style",
 						"display:none");
 				break;
 			}
 			case ("error") : {
 				this.style = "error";
-				document.getElementById("mrError").setAttribute("style",
-						"display:block");
 				break;
 			}
 			default : {
@@ -242,9 +233,6 @@ var MovierokChrome = {
 				break;
 			}
 		}
-		if (this.style != "error")
-			document.getElementById("mrError").setAttribute("style",
-					"display:none");
 		mrLogger.debug("changed status to " + state);
 		document.getElementById("mrStatusLogo").setAttribute("class",
 				"logo16 " + this.style);
@@ -255,38 +243,30 @@ var MovierokChrome = {
 		}
 	},
 	gotoWebsite : function() {
-        	// var activeWin = Application.activeWindow;
-		var url = "http://" + getPreference("remoteHost", "String");
-		// activeWin.open(toUrl(url));
-		this.openUrlToNewTab(url)
-	},
-	openUrlToNewTab : function(url) {
-		try {
-			var windowManager = (Components.classes["@mozilla.org/appshell/window-mediator;1"])
-					.getService();
-			var windowManagerInterface = windowManager
-					.QueryInterface(Components.interfaces.nsIWindowMediator);
-			var browser = (windowManagerInterface
-					.getMostRecentWindow("navigator:browser")).getBrowser();
-			var newTab = browser.addTab(url);
-			browser.selectedTab = newTab;
-		} catch (e) {
-			alert('error')
+        try {
+    		var url = "http://" + getPreference("remoteHost", "String");
+		    openUrlToNewTab(url)
+        } catch (e) {
+			mrLogger.error('Could not open new url: ' + e)
 		}
 	},
 	showSettings : function() {
-		var config = window.open("chrome://movierok/content/settings.xul", "mr_settings","modal,dialog");
+		var config = window.open("chrome://movierok/content/settings.xul", "mr_settings","dialog, width=500px, height=500px");
 	},
+    stopParser : function () {
+        if (parser.status != 'ready')
+            parser.stop();
+    },
 	update : function() {
-		this.doParse(false, false);
+		this.doParse(false, new Array("0","1","2"));
 	},
 	rescan : function() {
-		this.doParse(true, true);
+		this.doParse(true, new Array("0","1","2","3","4"));
 	},
-	doParse : function(sync, incomplete) {
+	doParse : function(sync, tasks) {
 		if (parser.status == 'ready') {
 			parser.sync = sync;
-			parser.incomplete = incomplete;
+			parser.tasks = tasks;
 			parser.start();
 		}
 	},

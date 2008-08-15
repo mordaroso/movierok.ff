@@ -1,8 +1,8 @@
 // *******************************************************************************
 // * movierok.ff
 // *
-// * File: movieinfo.js
-// * Description: reads the movieinfo (codec, resolution, etc.) from a file
+// * File: metadata.js
+// * Description: reads the meta data (codec, resolution, etc.) from a movie file
 // * Author : movierok team
 // * Licence : see licence.txt
 // *******************************************************************************
@@ -22,6 +22,7 @@ var AVI = function(mstream) {
 	this.audio_channels = null;
 	this.size = null;
 	this.duration = null;
+    this.container = "AVI";
 
 	// special final attributes
 	this.RIFF_AVI = "41564920";
@@ -60,7 +61,7 @@ AVI.prototype = {
 		var chunk_size = this.mstream.readLittleEndianInt();
 		if (chunk_type == this.LIST){
 			chunk_type = this.mstream.readHex(4);
-			this.firstListFound = true;		
+			this.firstListFound = true;
 			mrLogger.debug("first list found");
 		}
 		switch (chunk_type) {
@@ -239,6 +240,7 @@ var MP4 = function(mstream) {
 	this.audio_channels = null;
 	this.size = null;
 	this.duration = null;
+    this.container = "MOV";
 
 	// special final attributes
 	this.MOOV = "moov";
@@ -478,6 +480,7 @@ var MPEG = function(mstream) {
 	this.audio_channels = null;
 	this.size = null;
 	this.duration = null;
+    this.container = "MPEG";
 
 	// special final attributes
 	this.PACK_HEADER = "000001BA"
@@ -709,6 +712,7 @@ var MKV = function(mstream) {
 	this.audio_channels = null;
 	this.size = null;
 	this.duration = null;
+    this.container = "MKV";
 
 	this.estream = new EBMLFileStream(mstream);
 
@@ -776,48 +780,48 @@ MKV.prototype = {
 		        if (type != "matroska") {
 			        throw ("This is not a matroska file: type '"+type+"' unknown");
 		        }
-                break;            
-            }        
+                break;
+            }
             case(this.SEGMENT):{
                 mrLogger.debug("Segment: \nsize = " + size);
                 this.readSubElements(size);
-                break;            
-            } 
+                break;
+            }
             case(this.SEGMENT_INFO):{
                 mrLogger.debug("SegmentInfo: \nsize = " + size);
                 this.readSubElements(size);
-                break;            
-            } 
+                break;
+            }
             case(this.TRACKS):{
                 mrLogger.debug("Tracks: \nsize = " + size);
                 this.readSubElements(size);
                 this.stop_subs = true;
-                break;            
-            } 
+                break;
+            }
             case(this.TRACK_ENTRY):{
                 mrLogger.debug("TrackEntry: \nsize = " + size);
                 this.readSubElements(size);
-                break;            
-            }  
+                break;
+            }
             case(this.TRACK_TYPE):{
                 this.track_type = this.mstream.readHex(size);
                 mrLogger.debug("TrackType: "+ this.track_type);
   		        if (this.track_type != "01" && this.track_type != "02" && this.track_type != "03")
-                this.stop_subs = true;              
+                this.stop_subs = true;
                 break;
             }
             case(this.TIMECODE_SCALE):{
                 this.time_code = this.estream.getNumber(size);
-                break;            
+                break;
             }
             case(this.DURATION):{
                 var duration = this.mstream.readFloat();
                 this.duration = (duration * this.time_scale)/1000000000;
                 mrLogger.debug("Movie Duration: "+ this.duration);
-                break;            
+                break;
             }
             case(this.DEFAULT_DURATION):{
-                if(this.track_type == "01") {               
+                if(this.track_type == "01") {
                     var def_duration = this.estream.getNumber(size);
                     var nbr_of_frames = this.duration / (def_duration / 1000000000);
                     this.video_framerate =  Math.floor(nbr_of_frames / this.duration);
@@ -825,38 +829,38 @@ MKV.prototype = {
                 }
                 else{
                     this.mstream.skip(size);
-                }                
-                break;            
+                }
+                break;
             }
             case(this.CODEC_ID):{
                 var codecid = this.mstream.readString(size);
-                
-                this.codec_id = codecid;  		        
+
+                this.codec_id = codecid;
                 if (this.track_type == "01"){
                     this.video_encoding = MovieFile.getVideoEncoding(codecid);
                     mrLogger.debug("Video CodecID: "+ codecid);
-                }                 
-                else if (this.track_type == "02"){     
+                }
+                else if (this.track_type == "02"){
                     this.audio_encoding = MovieFile.getAudioEncoding(codecid);
                     mrLogger.debug("Audio CodecID: "+ codecid);
-                }               
+                }
                 break;
             }
             case(this.CODEC_PRIVATE):{
                 switch (this.codec_id){
                     //VIDEO
-                    case(this.VIDEO_VCM):{               
+                    case(this.VIDEO_VCM):{
                         this.readBitmapInfoHeader(size);
                         break;
                     }
                     //AUDIO
                     case(this.AUDIO_VORBIS):{
                         this.readVorbisHeader(size);
-                        break;                    
+                        break;
                     }
                     //TODO implement more encodings....
                     // http://haali.cs.msu.ru/mkv/codecs.pdf
-                    default:{               
+                    default:{
                         this.mstream.skip(size);
                         break;
                     }
@@ -865,47 +869,47 @@ MKV.prototype = {
             }
             case(this.VIDEO):{
                 mrLogger.debug("Video: \nsize = " + size);
-                this.readSubElements(size);   
+                this.readSubElements(size);
                 if(this.width != 0 && this.height != 0)
-                    this.video_resolution = this.width + "x" + this.height;            
+                    this.video_resolution = this.width + "x" + this.height;
                 break;
             }
             case(this.AUDIO):{
-                mrLogger.debug("Audio: \nsize = " + size);       
-                this.readSubElements(size);                   
+                mrLogger.debug("Audio: \nsize = " + size);
+                this.readSubElements(size);
                 break;
             }
             case(this.PIXEL_WIDTH):{
                 this.width = this.estream.getNumber(size);
-                mrLogger.debug("Video Width: "+ this.width);                
+                mrLogger.debug("Video Width: "+ this.width);
                 break;
             }
             case(this.PIXEL_HEIGHT):{
                 this.height = this.estream.getNumber(size);
-                mrLogger.debug("Video Height: "+ this.height);                
+                mrLogger.debug("Video Height: "+ this.height);
                 break;
             }
             case(this.CHANNELS):{
                 this.audio_channels = this.estream.getNumber(size);
-                mrLogger.debug("Audio Channels: "+ this.audio_channels);                
+                mrLogger.debug("Audio Channels: "+ this.audio_channels);
                 break;
             }
             case(this.SAMPLING_FREQUENCY):{
                 this.audio_sample_rate = this.mstream.readFloat();
-                mrLogger.debug("Audio Sample Rate: "+ this.audio_sample_rate);                
+                mrLogger.debug("Audio Sample Rate: "+ this.audio_sample_rate);
                 break;
             }
             case(this.BIT_DEPTH):{
                 //this.audio_bitrate = this.estream.getNumber(size);
 		        this.mstream.skip(size);
-                mrLogger.debug("Audio Bitrate: "+ this.audio_bitrate);                
+                mrLogger.debug("Audio Bitrate: "+ this.audio_bitrate);
                 break;
             }
             default:{
                 this.mstream.skip(size);
 			    //mrLogger.debug("skipped: \n" + id + "\nsize = " + size);
-                break;            
-            } 
+                break;
+            }
         }
 	},
 	readSubElements : function(size) {
@@ -916,12 +920,12 @@ MKV.prototype = {
         if(this.stop_subs){
             // Skip Rest
             this.mstream.skip(size - (this.mstream.tell() - start));
-            this.stop_subs = false;  
+            this.stop_subs = false;
         }
 	},
 	readBitmapInfoHeader : function(size) {
         var biSize = this.mstream.readLittleEndianInt();
-        var biWidth = this.mstream.readLittleEndianInt(); 
+        var biWidth = this.mstream.readLittleEndianInt();
         var biHeight = this.mstream.readLittleEndianInt();
         var biPlanes = this.mstream.readShort();
         var biBitCount = this.mstream.readShort();
@@ -930,20 +934,20 @@ MKV.prototype = {
         var biXPelsPerMeter = this.mstream.readInt();
         var biYPelsPerMeter = this.mstream.readInt();
         var biClrUsed = this.mstream.readInt();
-        var biClrImportant = this.mstream.readInt();  
+        var biClrImportant = this.mstream.readInt();
         this.video_encoding = biCompression;
         mrLogger.debug("Video Encoding: "+biCompression);
 	},
 	readVorbisHeader : function(size) {
         var start = this.mstream.tell();
-        // get nbr of frames    
+        // get nbr of frames
         var lacingHead = this.mstream.readByte();
-        //  get frame sizes        
+        //  get frame sizes
         var lacingSize = new Array();
         var totalSize = 0;
         for(var i = 0; i < lacingHead; i++){
             var tmpByte;
-            lacingSize[i] = 0;           
+            lacingSize[i] = 0;
             do{
                 tmpByte = this.mstream.readByte();
                 lacingSize[i] += tmpByte;
@@ -956,7 +960,7 @@ MKV.prototype = {
         for(var j = 0; j < i; j++){
             var start = this.mstream.tell();
             var frameId = this.mstream.readHex(7);
-            switch(frameId){                           
+            switch(frameId){
                 case(this.VORBIS_ID_HEADER):{
                     // read vorbis identification header
                     var version = this.mstream.readInt();
@@ -974,9 +978,9 @@ MKV.prototype = {
                     mrLogger.debug("Audio Sample Rate: "+this.audio_sample_rate);
                     mrLogger.debug("Audio Bitrate: "+this.audio_bitrate);
                 }
-            }            
+            }
             this.mstream.skip(lacingSize[j]-(this.mstream.tell() - start));
-        }        
+        }
         this.mstream.skip(size-(this.mstream.tell()-start));
 	}
 }
@@ -985,21 +989,21 @@ MKV.prototype = {
  * MovieFile
  */
 var MovieFile = {
-	getObjectByFile : function(file) {
+	getMetaDataByFile : function(file) {
 	mrLogger.debug("Start reading movieinfo from '"+file.path+"'")
-        var format_file; 
-        var mstream;       
+        var format_file;
+        var mstream;
         try{
             mstream = new ExtendedFileStream(file);
             // get Magic Number from file (the first 4 bytes) to identify file type
 	    var magicNumber = mstream.readHex(4);
-            // get file extension for second identification		    
+            // get file extension for second identification
             var extension = file.path.split(".");
-	    extension = extension[extension.length - 1];
+	        extension = extension[extension.length - 1];
             // get the Classes by MagicNumber and file extension
 		    var format_number = movie_format_number.getItem(magicNumber);
 		    var format_ending = movie_format_ending.getItem(extension);
-		    
+
 		    if (format_number != null) {
 			    // check magic number
 			    format_file = new format_number(mstream);
@@ -1016,7 +1020,7 @@ var MovieFile = {
             // start to read header => file type specific
 		    format_file.readHeader();
         }catch(exc){
-            mrLogger.debug("Reading movieinfo failed with Exception:\n"+exc)
+            mrLogger.debug("Reading meta data failed with Exception:\n"+exc)
             format_file = null;
         }finally{
             if(mstream != null)
@@ -1024,19 +1028,19 @@ var MovieFile = {
         }
 		return format_file;
 	},
-	getAudioEncoding : function(encodingId){		
+	getAudioEncoding : function(encodingId){
 		if(audio_encoding.hasItem(encodingId)){
 			return audio_encoding.getItem(encodingId);
 		}else{
-			mrLogger.debug("Audio Encoding '"+ encodingId +"' is unknown");		
+			mrLogger.debug("Audio Encoding '"+ encodingId +"' is unknown");
 			return null;
 		}
 	},
-	getVideoEncoding : function(encodingId){		
+	getVideoEncoding : function(encodingId){
 		if(video_encoding.hasItem(encodingId)){
 			return video_encoding.getItem(encodingId);
 		}else{
-			mrLogger.debug("Audio Encoding '"+ encodingId +"' is unknown");		
+			mrLogger.debug("Video Encoding '"+ encodingId +"' is unknown");
 			return null;
 		}
 	},
@@ -1074,6 +1078,7 @@ var video_encoding = new Hash(//
         "V_MPEG4/ISO/SP", "DivX4", //
         "V_MPEG4/ISO/ASP", "DivX5, XviD, FFMPEG", //
         "V_MPEG4/ISO/AP", "MPEG4", //
+        "V_MPEG4/ISO/AVC", "H264", //
         "V_MPEG4/MS/V3", "MPEG4 V3", //
         "V_MPEG1", "MPEG1", //
         "V_MPEG2" , "MPEG1", //
@@ -1341,7 +1346,7 @@ ExtendedFileStream.prototype = {
 		var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
 				.createInstance(Components.interfaces.nsIFileInputStream);
 		istream.QueryInterface(Components.interfaces.nsISeekableStream);
-		istream.init(file, -1, -1, false);
+		istream.init(file, 0x01, 0444, 0);
 		return istream;
 	},
 	getBinaryInputStream : function(fstream) {

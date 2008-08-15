@@ -94,6 +94,7 @@ hashString = function(string, algorithm) {
 			.createInstance(Components.interfaces.nsICryptoHash);
 	ch.initWithString(algorithm);
 	ch.update(data, data.length);
+    // pass false here to get binary data back
 	var hash = ch.finish(false);
 
 	var s = '';
@@ -102,6 +103,25 @@ hashString = function(string, algorithm) {
 	}
 
 	return s;
+}
+
+hashFile = function (file, algorithm){
+    var istream = Components.classes["@mozilla.org/network/file-input-stream;1"]
+                        .createInstance(Components.interfaces.nsIFileInputStream);
+    // open for reading
+    istream.init(file, 0x01, 0444, 0);
+    var ch = Components.classes["@mozilla.org/security/hash;1"]
+                   .createInstance(Components.interfaces.nsICryptoHash);
+    ch.initWithString(algorithm);
+    // this tells updateFromStream to read the entire file
+    const PR_UINT32_MAX = 0xffffffff;
+    ch.updateFromStream(istream, PR_UINT32_MAX);
+    // pass false here to get binary data back
+    var hash = ch.finish(false);
+
+    // convert the binary hash data to a hex string.
+    istream.close();
+    return [toHexString(hash.charCodeAt(i)) for (i in hash)].join("");
 }
 
 Hash = function() {
@@ -161,7 +181,7 @@ Hash = function() {
 }
 
 var MRokHasher = {
-	getFileHash : function(file) {
+	getMRokHash : function(file) {
 		return this.getMiddleBytes(file) + this.getShortSize(file);
 	},
 	getMiddleBytes : function(file) {
@@ -254,9 +274,12 @@ setPreference = function(name, value, type) {
 	}
 };
 
-getVersion = function() {
-	var gExtensionManager = Components.classes["@mozilla.org/extensions/manager;1"]
-			.getService(Components.interfaces.nsIExtensionManager);
-	var current = gExtensionManager.getItemForID("extension@movierok.org").version;
-	return current;
+openUrlToNewTab = function (url) {
+    var windowManager = (Components.classes["@mozilla.org/appshell/window-mediator;1"])
+        .getService();
+    var windowManagerInterface = windowManager
+        .QueryInterface(Components.interfaces.nsIWindowMediator);
+    var browser = (windowManagerInterface        .getMostRecentWindow("navigator:browser")).getBrowser();
+    var newTab = browser.addTab(url);
+    browser.selectedTab = newTab;
 }

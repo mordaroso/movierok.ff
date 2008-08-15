@@ -14,7 +14,7 @@ var Part = function() {
 	this.id = null;
 	this.path = null;
 	this.dir = null;
-	this.checksum = null;
+	this.mrokhash = null;
 	this.db_connection = MRData.dbConnection();
 }
 
@@ -34,21 +34,21 @@ Part.prototype = {
 		statement.reset();
 	},
 	insertPart : function() {
-		var sql = "INSERT INTO parts (dir, path, checksum) VALUES (?1,?2,?3)";
+		var sql = "INSERT INTO parts (dir, path, mrokhash) VALUES (?1,?2,?3)";
 		var statement = this.db_connection.createStatement(sql);
 		statement.bindUTF8StringParameter(0, this.dir);
 		statement.bindUTF8StringParameter(1, this.path);
-		statement.bindUTF8StringParameter(2, this.checksum);
+		statement.bindUTF8StringParameter(2, this.mrokhash);
 		statement.execute();
 		statement.reset();
 		return this.db_connection.lastInsertRowID;
 	},
 	updatePart : function() {
-		var sql = "UPDATE parts SET dir=?1, path=?2, checksum=?3 WHERE id = ?4";
+		var sql = "UPDATE parts SET dir=?1, path=?2, mrokhash=?3 WHERE id = ?4";
 		var statement = this.db_connection.createStatement(sql);
 		statement.bindUTF8StringParameter(0, this.dir);
 		statement.bindUTF8StringParameter(1, this.path);
-		statement.bindUTF8StringParameter(2, this.checksum);
+		statement.bindUTF8StringParameter(2, this.mrokhash);
 		statement.bindUTF8StringParameter(3, this.id);
 		statement.execute();
 		statement.reset();
@@ -64,7 +64,20 @@ Part.prototype = {
 		}
 		statement.reset();
 		return this.path.substr(movieDirPath.length+1);
-	}
+	},
+    getFile : function () {
+        var file = Components.classes["@mozilla.org/file/local;1"]
+		    .createInstance(Components.interfaces.nsILocalFile);
+        mrLogger.debug(this.path);
+		file.initWithPath(this.path);
+        return file;
+    },
+    getMD5 : function () {
+       return hashFile(this.getFile(), "MD5");
+    },
+    getMetaData : function (){
+        return MovieFile.getMetaDataByFile (this.getFile());
+    }
 };
 
 /*
@@ -83,10 +96,10 @@ var PartController = {
 		}
 		return false;
 	},
-	partsToXML : function(checksums) {
+	partsToXML : function(mrokhashes) {
 		var content = "<parts>";
-		for (var checksum in checksums) {
-			content += "<part><check_sum>" + checksum + "</check_sum></part>";
+		for (var mrokhash in mrokhashes) {
+			content += "<part><mrokhash>" + mrokhash + "</mrokhash></part>";
 		}
 		content += "</parts>";
 		return content;
@@ -96,13 +109,13 @@ var PartController = {
 		part.id = statement.getInt32(0);
 		part.dir = statement.getInt32(1);
 		part.path = statement.getString(2);
-		part.checksum = statement.getString(3);
+		part.mrokhash = statement.getString(3);
 		return part;
 	},
-	findByChecksum : function(checksum) {
-		var sql = "SELECT id, dir, path, checksum FROM parts WHERE checksum = ?1";
+	findByMRokHash : function(mrokhash) {
+		var sql = "SELECT id, dir, path, mrokhash FROM parts WHERE mrokhash = ?1";
 		var statement = MRData.dbConnection().createStatement(sql);
-		statement.bindUTF8StringParameter(0, checksum);
+		statement.bindUTF8StringParameter(0, mrokhash);
 		var result = [];
 		while (statement.executeStep()) {
 			result.push(this.statementToObject(statement));
@@ -114,7 +127,7 @@ var PartController = {
 			return null;
 	},
 	findShadowParts : function() {
-		var sql = "SELECT id, dir, path, checksum FROM parts WHERE dir in( SELECT id FROM dirs WHERE movie_dir not in (SELECT id FROM movie_dirs))";
+		var sql = "SELECT id, dir, path, mrokhash FROM parts WHERE dir in( SELECT id FROM dirs WHERE movie_dir not in (SELECT id FROM movie_dirs))";
 		var statement = MRData.dbConnection().createStatement(sql);
 		var result = [];
 		while (statement.executeStep()) {
@@ -124,7 +137,7 @@ var PartController = {
 		return result;
 	},
 	findByDir : function(dir_id) {
-		var sql = "SELECT id, dir, path, checksum FROM parts WHERE dir = ?1";
+		var sql = "SELECT id, dir, path, mrokhash FROM parts WHERE dir = ?1";
 		var statement = MRData.dbConnection().createStatement(sql);
 		statement.bindInt32Parameter(0, dir_id);
 		var result = [];
@@ -134,11 +147,11 @@ var PartController = {
 		statement.reset();
 		return result;
 	},
-	findOrInitializeByChecksum : function(file) {
-		var checksum = MRokHasher.getFileHash(file);
-		var sql = "SELECT id, dir, path, checksum FROM parts WHERE checksum = ?1";
+	findOrInitializeByMRokHash : function(file) {
+		var mrokhash = MRokHasher.getMRokHash(file);
+		var sql = "SELECT id, dir, path, mrokhash FROM parts WHERE mrokhash = ?1";
 		var statement = MRData.dbConnection().createStatement(sql);
-		statement.bindUTF8StringParameter(0, checksum);
+		statement.bindUTF8StringParameter(0, mrokhash);
 		var result = [];
 		while (statement.executeStep()) {
 			result.push(this.statementToObject(statement));
@@ -148,7 +161,7 @@ var PartController = {
 			return result[0];
 		else {
 			var part = new Part();
-			part.checksum = checksum;
+			part.mrokhash = mrokhash;
 			return part;
 		}
 	}

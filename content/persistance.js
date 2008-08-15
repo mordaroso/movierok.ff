@@ -8,7 +8,7 @@
 // *******************************************************************************
 
 var MRDatabase = function() {
-	this.createDB();
+	//this.createDB();
 };
 MRDatabase.prototype = {
 	Version : '0.0.1',
@@ -41,7 +41,11 @@ MRDatabase.prototype = {
 				.executeSimpleSQL("CREATE TABLE IF NOT EXISTS dirs (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, movie_dir INTEGER NOT NULL, hash TEXT)");
 		this
 				.dbConnection()
-				.executeSimpleSQL("CREATE TABLE IF NOT EXISTS parts (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, dir INTEGER NOT NULL, checksum TEXT)");
-	}
+				.executeSimpleSQL("CREATE TABLE IF NOT EXISTS parts (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, dir INTEGER NOT NULL, mrokhash TEXT)");
+        this
+				.dbConnection()
+				.executeSimpleSQL("CREATE TABLE IF NOT EXISTS version (id INTEGER NOT NULL PRIMARY KEY, version TEXT NOT NULL)");
+        mrLogger.debug("DB created");
+    }
 };
 MRData = new MRDatabase();

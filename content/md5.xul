@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- *************************************************************************
+	  movierok.ff
+
+	  File: md5.xul
+	  Description: a dialog for the md5 popup.
+	  Author : movierok team
+	  Licence : see licence.txt
+************************************************************************** -->
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://movierok/skin/movierok.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://movierok/locale/movierok.dtd">
+
+<dialog
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	title="&movierok.md5Title;"
+	id="mrMD5Dialog"
+	onload="init()"
+	ondialogaccept="delayedAction = 'acceptDialog'; ok()"
+
+	buttons="accept"
+
+	persist="screenX screenY"
+	windowtype="mr:settings">
+
+	<script type="application/x-javascript" src="lib.js"/>
+	<script type="application/x-javascript" src="md5.js"/>
+
+    <vbox id="message"  width="">
+        <description id="md5Info">&movierok.md5Info;</description>
+        <hbox align="center">
+            <description>&movierok.md5CancelBefore;</description>
+            <image src="chrome://movierok/skin/cancel.png"/>
+            <description>&movierok.md5CancelAfter;</description>
+        </hbox>
+        <hbox align="center">
+            <description>&movierok.md5RescanBefore;</description>
+            <image src="chrome://movierok/skin/arrow_refresh.png"/>
+            <description>&movierok.md5RescanAfter;</description>
+        </hbox>
+        <checkbox id="md5DontShow" label="&movierok.md5DontShow;" />
+	</vbox>
+</dialog>

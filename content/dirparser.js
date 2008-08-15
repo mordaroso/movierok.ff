@@ -19,10 +19,13 @@ var DirParser = function() {
 	this.status = 'ready';
 	this.sync = false;
 	this.moviedirs = null;
-	this.incomplete = false;
-	this.incompleteParts;
+	this.metaDataArray;
 	this.totalSteps;
 	this.finishedSteps;
+    this.pendingMD5 = null;
+    this.tasks = new Array();
+    this.doneTasks = 0;
+    this.thread = null;
 }
 DirParser.prototype = {
 	stop : function() {
@@ -31,31 +34,92 @@ DirParser.prototype = {
 			window.clearInterval(this.stepInterval);
 			this.stepInterval = null;
 		}
+        if(this.thread != null)
+            this.thread.shutdown();
 		this.running = false;
 		this.status = 'ready';
-		mrLogger.debug("dirparser finished");
+		mrLogger.info("Dirparser finished");
 	},
+    startTask : function() {
+        var task = this.tmp[0];
+        mrLogger.debug("start task: #"+task);
+        switch(task){
+            case("0"):{
+                // INIT
+                MovierokChrome.setText(stringsBundle.getString("task.init"));
+                if (this.sync) {
+			        this.setNextStep("this.getPartsOnRemote()", null);
+		        }
+		        this.setNextStep("this.init()", null);
+                this.setNextStep("this.checkVersion()", null);
+                break;
+            }
+            case("1"):{
+                // PARSE
+                MovierokChrome.setText(stringsBundle.getString("task.parse"));
+                this.setNextStep("this.checkMovieDirs()", null);
+                break
+            }
+            case("2"):{
+                // SAVE
+                MovierokChrome.setText(stringsBundle.getString("task.save"));
+		        this.setNextStep("this.sendPartsToRemote()", null);
+                this.setNextStep("this.removeShadows()", null);
+                break;
+            }
+            case("3"):{
+                // MOVIEINFO
+                MovierokChrome.setText(stringsBundle.getString("task.movieinfo"));
+                this.metaDataArray = new Array();
+                this.setNextStep("this.sendMetaData()", null);
+                this.setNextStep("this.getNoMetaData()", null);
+                break;
+            }
+            case("4"):{
+                // CHECKSUM
+                var infotext = stringsBundle.getString('task.md5');
+	            infotext = infotext.replace(/\$\d/g, "?");
+		        MovierokChrome.setText(infotext);
+                this.metaDataArray = new Array();
+                this.setNextStep("this.getNoMD5()", null);
+                break;
+            }
+            default:{
+                mrLogger.warning("Task #"+task+" not found!");
+            }
+        }
+
+    },
+    endTask : function () {
+        var task = this.tmp[0];
+        mrLogger.debug("end task: #"+task);
+        this.doneTasks++;
+        this.updatePercentage();
+
+        if(this.doneTasks == this.tasks.length)
+            this.stop();
+
+    },
+    updatePercentage : function(){
+        var nbrOfSteps = this.totalSteps-this.tasks.length;
+        var maxPercentageInStep = (100/this.tasks.length)*this.doneTasks;
+        MovierokChrome.setPercent(Math.floor(maxPercentageInStep / nbrOfSteps
+            * this.finishedSteps));
+    },
 	start : function() {
 		MovierokChrome.setStatus("parsing");
-		MovierokChrome.setPercent(0);
+        mrLogger.info("Start dirparser...");
 		this.steps = new Array();
 		this.stepVars = new Array();
 		this.totalSteps = 0;
 		this.finishedSteps = 0;
-		this.addStep("this.checkVersion()", null);
-		this.addStep("this.init()", null);
+        this.doneTasks = 0;
 
-		if (this.sync) {
-			this.addStep("this.getPartsOnRemote()", null);
-		}
-		this.addStep("this.checkMovieDirs()", null);
-		this.addStep("this.removeShadows()", null);
-		this.addStep("this.sendPartsToRemote()", null);
-		if (this.incomplete) {
-			this.incompleteParts = new Array();
-			this.addStep("this.getIncomplete()", null);
-			this.addStep("this.sendIncomplete()", null);
-		}
+        for (var i in this.tasks){
+            var task = new Array(this.tasks[i]);
+            this.addStep("this.startTask()", task);
+            this.addStep("this.endTask()", task);
+        }
 		this.stepInterval = window.setInterval("parser.doNextStep()", 10);
 	},
 	addStep : function(step, vars) {
@@ -69,14 +133,13 @@ DirParser.prototype = {
 		this.totalSteps++;
 	},
 	doNextStep : function() {
-		if (this.running)
+		if (this.running || this.thread != null)
 			return
 		if (this.steps.length > 0) {
 			try {
 				this.running = true;
 				var step = this.steps[0];
 				this.tmp = this.stepVars[0];
-				// mrLogger.debug("execute: " + step);
 				this.steps.shift();
 				this.stepVars.shift();
 
@@ -84,14 +147,11 @@ DirParser.prototype = {
 
 				this.running = false;
 				this.finishedSteps++;
-				MovierokChrome.setPercent(Math.floor(100 / this.totalSteps
-						* this.finishedSteps));
+                this.updatePercentage();
 			} catch (exc) {
 				mrLogger.error(exc);
 				this.stop();
 			}
-		} else {
-			this.stop();
 		}
 	},
 	checkVersion : function() {
@@ -119,14 +179,14 @@ DirParser.prototype = {
 		var isCompatible = false;
 		for (var i in versions) {
 			mrLogger.debug("Version: " + versions[i])
-			if (versions[i] == getVersion()) {
+			if (versions[i] == Version.getExtensionVersion()) {
 				isCompatible = true;
 			}
 		}
 		if (!isCompatible) {
 			this.status = 'error';
 			MovierokChrome.setStatus("error");
-			MovierokChrome.setError(stringsBundle.getString("versionString"));
+			MovierokChrome.setText(stringsBundle.getString("error.version"));
 			this.stop();
 		}
 	},
@@ -164,8 +224,8 @@ DirParser.prototype = {
 
 			for (var i = 0; i < parts.length; i++) {
 				part = new Part();
-				part.checksum = parts[i].check_sum;
-				this.oldParts.setItem(parts[i].check_sum, part);
+				part.mrokhash = parts[i].mrokhash;
+				this.oldParts.setItem(parts[i].mrokhash, part);
 				this.orgParts = this.oldParts.clone();
 			}
 		} else {
@@ -174,19 +234,19 @@ DirParser.prototype = {
 		}
 	},
 	error : function(event) {
-		var error = 'connectionString';
+		var error = 'error.connection';
 		if (event.currentTarget.status == 401) {
 			mrLogger
-					.warning("Login to remote failed! Please check if cookies are enabled and login on the remote page.");
+					.error("Login to remote failed! Please check if cookies are enabled and login on the remote page.");
 
-			error = 'authString';
+			error = 'error.auth';
 		} else {
 			mrLogger.warning("AJAX finished with state: "
 					+ event.currentTarget.status);
 		}
 		this.status = 'error';
 		MovierokChrome.setStatus("error");
-		MovierokChrome.setError(stringsBundle.getString(error));
+		MovierokChrome.setText(stringsBundle.getString(error));
 		this.stop();
 	},
 	checkMovieDirs : function() {
@@ -197,9 +257,9 @@ DirParser.prototype = {
 				this.setNextStep("this.checkDir()", vars);
 			} else {
 				MovierokChrome.setStatus("error");
-				var errortext = stringsBundle.getString('moviedirString');
+				var errortext = stringsBundle.getString('error.moviedir');
 				errortext = errortext.replace(/\$\d/g, this.moviedirs[i].path);
-				MovierokChrome.setError(errortext);
+				MovierokChrome.setText(errortext);
 
 			}
 		}
@@ -217,7 +277,7 @@ DirParser.prototype = {
 			checkFiles = true;
 			var parts = PartController.findByDir(dir.id);
 			for (var i = 0; i < parts.length; i++) {
-				this.oldParts.setItem(parts[i].checksum, parts[i]);
+				this.oldParts.setItem(parts[i].mrokhash, parts[i]);
 			}
 
 		}
@@ -247,33 +307,33 @@ DirParser.prototype = {
 		var dir = this.tmp[1];
 		var part = null;
 		try {
-			part = PartController.findOrInitializeByChecksum(file);
+			part = PartController.findOrInitializeByMRokHash(file);
 		} catch (exc) {
 			return;
 		}
-		if (this.newParts.hasItem(part.checksum)) {
+		if (this.newParts.hasItem(part.mrokhash)) {
 			mrLogger.debug("twice found: " + file.path);
 		} else if (part.path == null) {
 			part.path = file.path;
 			part.dir = dir.id;
-			this.newParts.setItem(part.checksum, part);
+			this.newParts.setItem(part.mrokhash, part);
 		} else if (part.path != file.path) {
 			part.path = file.path;
 			part.dir = dir.id;
 			part.save();
 			mrLogger.debug("moved : " + file.path);
 		}
-		if (this.sync && !this.orgParts.hasItem(part.checksum)) {
-			this.newParts.setItem(part.checksum, part);
+		if (this.sync && !this.orgParts.hasItem(part.mrokhash)) {
+			this.newParts.setItem(part.mrokhash, part);
 		}
-		if (this.oldParts.hasItem(part.checksum))
-			this.oldParts.removeItem(part.checksum)
+		if (this.oldParts.hasItem(part.mrokhash))
+			this.oldParts.removeItem(part.mrokhash)
 	},
 	removeShadows : function() {
 		var parts = PartController.findShadowParts();
 		DirController.removeShadowDirs();
 		for (var i = 0; i < parts.length; i++) {
-			this.oldParts.setItem(parts[i].checksum, parts[i]);
+			this.oldParts.setItem(parts[i].mrokhash, parts[i]);
 		}
 	},
 	sendPartsToRemote : function() {
@@ -324,26 +384,26 @@ DirParser.prototype = {
 		if (this.status != 'error') {
 			mrLogger.debug('save all');
 
-			for (var checksum in this.newParts.items) {
-				this.newParts.getItem(checksum).save();
+			for (var mrokhash in this.newParts.items) {
+				this.newParts.getItem(mrokhash).save();
 			}
-			for (var checksum in this.oldParts.items) {
-				if (this.oldParts.getItem(checksum).id != null)
-					this.oldParts.getItem(checksum).remove();
+			for (var mrokhash in this.oldParts.items) {
+				if (this.oldParts.getItem(mrokhash).id != null)
+					this.oldParts.getItem(mrokhash).remove();
 			}
 			for (var i = 0; i < this.changedDirs.length; i++) {
 				this.changedDirs[i].save();
 			}
 		}
 	},
-	getIncomplete : function() {
+	getNoMetaData : function() {
 		var remote = getPreference("remoteHost", "String");
-		var url = "http://" + remote + '/parts/incomplete.json';
+		var url = "http://" + remote + '/parts.json?without=movie_file_meta_data';
 		var request = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
 				.createInstance(Components.interfaces.nsIDOMEventTarget);
 		request.QueryInterface(Components.interfaces.nsIXMLHttpRequest);
 		request.addEventListener("load", function(evt) {
-			parser.handleIncomplete(evt);
+			parser.handleNoMetaData(evt);
 		}, false);
 		request.addEventListener("error", function(evt) {
 			parser.error(evt);
@@ -351,19 +411,23 @@ DirParser.prototype = {
 		request.open("GET", url, false);
 		request.send(null);
 	},
-	sendIncomplete : function() {
-		if (this.incompleteParts.length > 0) {
+	sendMetaData : function() {
+		if (this.metaDataArray.length > 0) {
 			var splitSize = 200;
-			mrLogger.debug("count complete: "+this.incompleteParts.length);
-			for (var j = 0; j < this.incompleteParts.length; j += splitSize) {
+			mrLogger.debug("count complete: "+this.metaDataArray.length);
+			for (var j = 0; j < this.metaDataArray.length; j += splitSize) {
 				var xmlText = "";
 				xmlText += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 				xmlText += "<parts>";
-				for (var count = j; (count < (j  + splitSize)) && (count < this.incompleteParts.length); count++) {
-					var check_sum = this.incompleteParts[count][0];
-					var mfile = this.incompleteParts[count][1];
+				for (var count = j; (count < (j  + splitSize)) && (count < this.metaDataArray.length); count++) {
+					var check_sum = this.metaDataArray[count][0];
+					var mfile = this.metaDataArray[count][1];
 					xmlText += "<part>";
-					xmlText += "<check-sum>" + check_sum + "</check-sum>";
+					xmlText += "<mrokhash>" + check_sum + "</mrokhash>";
+
+                    // CONTAINER
+						xmlText += "<container>" + mfile.container
+								+ "</container>";
 
                     // VIDEO
                     if (mfile.video_encoding != null)
@@ -398,8 +462,6 @@ DirParser.prototype = {
 					xmlText += "</part>";
 				}
 				xmlText += "</parts>";
-				mrLogger.debug(j);
-				mrLogger.debug(count);
 				mrLogger.debug(xmlText);
 				var remote = getPreference("remoteHost", "String");
 				var url = "http://" + remote + "/parts/complete";
@@ -415,38 +477,160 @@ DirParser.prototype = {
 			}
 		}
 	},
-	readMovieInfo : function() {
+	readMetaData : function() {
 		var check_sum = this.tmp[0];
-		var part = PartController.findByChecksum(check_sum);
-		if (part != null) {
-			var file = Components.classes["@mozilla.org/file/local;1"]
-					.createInstance(Components.interfaces.nsILocalFile);
-			file.initWithPath(part.path);
-
-		    var movieData = MovieFile.getObjectByFile(file);
-            if (movieData !== null)
-                this.incompleteParts.push(new Array(check_sum, movieData));
+		var part = PartController.findByMRokHash(check_sum);
+		if (part != null) {		    var metaData = part.getMetaData();
+            if (metaData !== null)
+                this.metaDataArray.push(new Array(check_sum, metaData));
 		}
 	},
-	handleIncomplete : function(event) {
+	handleNoMetaData : function(event) {
 		var response = event.currentTarget.responseText;
 		if (isJSON(response)) {
-			mrLogger.debug("incomplete on remote: " + response);
+			mrLogger.debug("no meta data on remote: \n" + response);
 			var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
 					.createInstance(Components.interfaces.nsIJSON);
 
 			var parts = nativeJSON.decode(response);
 
-			for (var i = 0; i < parts.length; i++) {
-				//mrLogger.debug("incomplete: " + parts[i].check_sum);
-				var vars = new Array(parts[i].check_sum);
-				this.setNextStep("this.readMovieInfo()", vars);
+			for (var i in parts) {
+				var vars = new Array(parts[i].mrokhash);
+				this.setNextStep("this.readMetaData()", vars);
 			}
 		} else {
 			mrLogger.debug("response is not json: " + response);
 		}
-	}
+	},
+    getNoMD5 : function() {
+		var remote = getPreference("remoteHost", "String");
+		var url = "http://" + remote + '/parts.json?without=md5';
+		var request = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
+				.createInstance(Components.interfaces.nsIDOMEventTarget);
+		request.QueryInterface(Components.interfaces.nsIXMLHttpRequest);
+		request.addEventListener("load", function(evt) {
+			parser.handleNoMD5(evt);
+		}, false);
+		request.addEventListener("error", function(evt) {
+			parser.error(evt);
+		}, false);
+		request.open("GET", url, false);
+		request.send(null);
+	},
+    handleNoMD5 : function(event) {
+		var response = event.currentTarget.responseText;
+		if (isJSON(response)) {
+			mrLogger.debug("no md5 on remote: \n" + response);
+			var nativeJSON = Components.classes["@mozilla.org/dom/json;1"]
+					.createInstance(Components.interfaces.nsIJSON);
+
+			var parts = nativeJSON.decode(response);
+            this.pendingMD5 = parts.length;
+            if(this.pendingMD5 > 0){
+                var params = {nbrOfMD5:this.pendingMD5};
+                if(getPreference("showMD5Popup", "boolean") == true){
+                    window.openDialog("chrome://movierok/content/md5.xul", "", "dialog, chrome, width=550px, height=200px", params).focus();
+                }
+                for (var i in parts) {
+				    var vars = new Array(parts[i].mrokhash);
+                    this.setNextStep("this.getMD5()", vars);
+			    }
+            }
+
+		} else {
+			mrLogger.debug("response is not json: " + response);
+		}
+	},
+    getMD5 : function () {
+        var check_sum = this.tmp[0];
+		var part = PartController.findByMRokHash(check_sum);
+		if (part != null) {
+            var infotext = stringsBundle.getString('task.md5');
+	        infotext = infotext.replace(/\$\d/g, this.pendingMD5);
+		    MovierokChrome.setText(infotext);
+            this.thread = Components.classes["@mozilla.org/thread-manager;1"].getService().newThread(0);
+            var main = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
+            this.thread.dispatch(new md5Thread(this.pendingMD5, part, main, this.thread), this.thread.DISPATCH_NORMAL);
+            this.pendingMD5--;
+        }
+
+    },
+    sendMD5 : function (md5, threadId, mrokhash) {
+	    this.thread = null;
+	    var xmlText = "<parts>";
+	    xmlText += "<part>";
+	    xmlText += "<mrokhash>"+mrokhash+"</mrokhash>";
+	    xmlText += "<md5>"+md5+"</md5>";
+	    xmlText += "</part>";
+	    xmlText += "</parts>";
+	    mrLogger.debug(xmlText);
+	    var remote = getPreference("remoteHost", "String");
+	    var url = "http://" + remote + "/parts/complete";
+	    var request = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
+		    .createInstance(Components.interfaces.nsIDOMEventTarget);
+	    request.QueryInterface(Components.interfaces.nsIXMLHttpRequest);
+	    request.addEventListener("error", function(evt) {
+		    parser.error(evt);
+	    }, false);
+	    request.open("PUT", url, false);
+	    request.send(xmlText);
+    }
 
 }
+
+var md5Thread = function(threadID, part, main, background) {
+  this.threadID = threadID;
+  this.main = main;
+  this.part = part;
+  this.md5 = "";
+  this.background = background;
+};
+
+md5Thread.prototype = {
+  run: function() {
+    try {
+        this.md5 = this.part.getMD5();
+
+        this.main.dispatch(new mainThread(this.threadID, this.md5, this.part.mrokhash),
+        this.background.DISPATCH_NORMAL);
+    } catch(err) {
+      Components.utils.reportError(err);
+    }
+  },
+
+  QueryInterface: function(iid) {
+    if (iid.equals(Components.interfaces.nsIRunnable) ||
+        iid.equals(Components.interfaces.nsISupports)) {
+            return this;
+    }
+    throw Components.results.NS_ERROR_NO_INTERFACE;
+  }
+};
+
+
+var mainThread = function(threadID, md5, mrokhash) {
+  this.threadID = threadID;
+  this.md5 = md5;
+  this.mrokhash = mrokhash;
+};
+
+mainThread.prototype = {
+  run: function() {
+    try {
+      parser.sendMD5(this.md5, this.threadID, this.mrokhash);
+    } catch(err) {
+      Components.utils.reportError(err);
+    }
+  },
+
+  QueryInterface: function(iid) {
+    if (iid.equals(Components.interfaces.nsIRunnable) ||
+        iid.equals(Components.interfaces.nsISupports)) {
+            return this;
+    }
+    throw Components.results.NS_ERROR_NO_INTERFACE;
+  }
+};
+
 
 var parser = new DirParser();

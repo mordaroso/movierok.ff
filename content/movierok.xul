@@ -15,7 +15,7 @@
 
 <overlay id="movierok-overlay"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	
+
 	<!-- javascripts -->
 	<script type="application/x-javascript"
 		src="chrome://movierok/content/lib.js"/>
@@ -32,45 +32,49 @@
 	<script type="application/x-javascript"
 		src="chrome://movierok/content/chrome.js"/>
 	<script type="application/x-javascript"
-		src="chrome://movierok/content/movieinfo.js"/>
+		src="chrome://movierok/content/metadata.js"/>
 	<script type="application/x-javascript"
 		src="chrome://movierok/content/player.js"/>
 	<script type="application/x-javascript"
 		src="chrome://movierok/content/logger.js"/>
 	<script type="application/x-javascript"
 		src="chrome://movierok/content/omdb_suggest.js"/>
-		
+    <script type="application/x-javascript"
+		src="chrome://movierok/content/version.js"/>
+
 	<stringbundleset id="stringbundleset">
-		<stringbundle id="string-bundle" src="chrome://movierok/locale/errors.properties"/>
+		<stringbundle id="string-bundle" src="chrome://movierok/locale/statusinfo.properties"/>
 	</stringbundleset>
-	
+
 	<!-- tools menu -->
 	<menupopup id="menu_ToolsPopup">
-		<menuitem id="mrSettings" label="&movierok.MenuItem;..." oncommand="MovierokChrome.showSettings();" insertafter="javascriptConsole"/>
-	</menupopup> 
+		<menuitem class="menuitem-iconic" id="mrSettings" image="chrome://movierok/skin/icon.png"  label="&movierok.MenuItem;..." oncommand="MovierokChrome.showSettings();" insertafter="javascriptConsole"/>
+	</menupopup>
 
 	<!-- statusbar overlay -->
 	<statusbar id="status-bar">
-		
-		<!-- error -->
-		<label id="mrError" /> 
-		
-		<!-- progress -->
-		<progressmeter id="mrProgress" mode="undetermined"/>
-		
+        <statusbarpanel id="mrStatusBar1">
+		    <!-- info -->
+		    <label id="mrInfo" />
+            <image id="mrStopParser1" src="chrome://movierok/skin/cancel.png" onmousedown="MovierokChrome.stopParser();" style="cursor:pointer"/>
+		    <!-- progress -->
+		    <progressmeter id="mrProgress" mode="undetermined"/>
+        </statusbarpanel>
+
 		<!-- statusbarpanel -->
-		<statusbarpanel id="mrStatusBar" context="mrStatusContextMenu" tooltiptext="movierok" style="cursor:pointer">
+		<statusbarpanel id="mrStatusBar2" context="mrStatusContextMenu" tooltiptext="movierok">
 			<image id="mrStatusLogo" class="logo16 normal" onmousedown="MovierokChrome.click(event)"/>
 		</statusbarpanel>
-  
+
 		<!-- statusbarpanel menu -->
 		<menupopup id="mrStatusContextMenu">
 			<menuitem id="mrDisabled" label="&movierok.DisableMovierok;" type="checkbox" oncommand="MovierokChrome.changeDisable();"/>
-			<menuitem label="&movierok.Settings;" oncommand="MovierokChrome.showSettings();" />
+			<menuitem id="mrConfig" class="menuitem-iconic" image="chrome://movierok/skin/wrench.png" label="&movierok.Settings;" oncommand="MovierokChrome.showSettings();" />
 			<menuseparator/>
-			<menuitem label="&movierok.Rescan;" oncommand="MovierokChrome.rescan();"/>
-			<menuseparator/>
-			<menuitem label="&movierok.Website;" oncommand="MovierokChrome.gotoWebsite()"/>
+    		<menuitem id="mrRescan" class="menuitem-iconic" image="chrome://movierok/skin/arrow_refresh.png" label="&movierok.Rescan;" oncommand="MovierokChrome.rescan();"/>
+            <menuitem id="mrStopParser2" class="menuitem-iconic" image="chrome://movierok/skin/cancel.png" label="&movierok.StopParser;" oncommand="MovierokChrome.stopParser();"/>
+            <menuseparator/>
+			<menuitem id="miWebpage" class="menuitem-iconic" image="chrome://movierok/skin/world_go.png" label="&movierok.Website;" oncommand="MovierokChrome.gotoWebsite()"/>
 		</menupopup>
 	</statusbar>
 

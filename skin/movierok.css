@@ -3,19 +3,11 @@
     height: 16px;
     display: block;
     background: url(chrome://movierok/skin/movierok_states_16x16.png) no-repeat;
+    cursor: pointer;
 }
 
 .normal{
 
-}
-
-#title{
-    font-size: 20px;
-    font-style: bold;
-    background: url(chrome://movierok/skin/icon.png) no-repeat;
-    height: 35px;
-    padding-top: 10px;
-    padding-left: 35px;
 }
 
 .disabled{
@@ -34,6 +26,12 @@
     display: none;
 }
 
-#mrError {
+#mrStopParser1{
+    display: none;
+    cursor: pointer;
+}
+
+#mrStopParser2{
     display: none;
 }
+

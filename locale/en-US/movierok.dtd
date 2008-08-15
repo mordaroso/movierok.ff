@@ -7,20 +7,28 @@
 	  Licence : see licence.txt
 ************************************************************************** -->
 
-<!ENTITY  movierok.Movierok		"movierok">
-<!ENTITY  movierok.Website		"movierok.org Website...">
-<!ENTITY  movierok.Settings		"Settings">
-<!ENTITY  movierok.MenuItem		"movierok">
-<!ENTITY  movierok.Rescan		"Rescan moviedirs...">
-<!ENTITY  movierok.DisableMovierok	"Disable movierok">
-<!ENTITY  settings.title		"movierok Settings">
-<!ENTITY  settings.description		"movierok Settings">
-<!ENTITY  settings.movieDirs		"Folders">
-<!ENTITY  settings.movieDirsHelp	"Add your movie folders here to let movierok parse them for movies">
-<!ENTITY  settings.addMovieDir		"Add">
-<!ENTITY  settings.removeMovieDir	"Remove">
-<!ENTITY  settings.moviePlayer		"Movie Player">
-<!ENTITY  settings.pathToPlayer		"Path to Player:">
+<!ENTITY  movierok.Movierok             "movierok">
+<!ENTITY  movierok.Website              "movierok.org Website...">
+<!ENTITY  movierok.Settings             "Settings">
+<!ENTITY  movierok.MenuItem             "movierok">
+<!ENTITY  movierok.Rescan               "Rescan moviedirs...">
+<!ENTITY  movierok.DisableMovierok      "Disable movierok">
+<!ENTITY  movierok.StopParser           "Stop rescan">
+<!ENTITY  settings.title                "movierok Settings">
+<!ENTITY  settings.description          "movierok Settings">
+<!ENTITY  settings.movieDirs            "Folders">
+<!ENTITY  settings.movieDirsHelp        "Add your movie folders here and let movierok parse them.">
+<!ENTITY  settings.addMovieDir          "Add">
+<!ENTITY  settings.removeMovieDir       "Remove">
+<!ENTITY  settings.moviePlayer          "Movie Player">
+<!ENTITY  settings.pathToPlayer         "Path to Player:">
 <!ENTITY  settings.updateBefore         "Update my rips after">
 <!ENTITY  settings.updateAfter          "minutes in Idle">
 <!ENTITY  settings.autoUpdate           "Auto Update">
+<!ENTITY  movierok.md5Title             "movierok md5 checksums">
+<!ENTITY  movierok.md5Info              "movierok has found $1 parts of which it doesn't know their md5 checksums yet. Creating the checksums may take some time.">
+<!ENTITY  movierok.md5CancelBefore      "You can cancel this progress by clicking on the">
+<!ENTITY  movierok.md5CancelAfter       "cancel button on the statusbar.">
+<!ENTITY  movierok.md5RescanBefore      "The progress will proceed during the next">
+<!ENTITY  movierok.md5RescanAfter       "rescan.">
+<!ENTITY  movierok.md5DontShow          "Don't show me this message again">

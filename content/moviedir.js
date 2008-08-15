@@ -79,6 +79,7 @@ var MovieDirController = {
 			moviedir.path = statement.getString(1);
 			result.push(moviedir);
 		}
+        statement.reset();
 		return result;
 	}
 };
