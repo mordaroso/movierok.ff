@@ -53,6 +53,11 @@ var Version = {
     check : function() {
 	    var ver = "-1", firstrun = true;
 	    var current = this.getExtensionVersion();
+        mrLogger.debug(this.getDBVersion() + "-" + current);
+        if(this.getDBVersion() == null || this.getDBVersion() != current){
+            MRData.createDB();
+            this.setVersion(current);
+        }
 	    try {
 	    	ver = getPreference("version", "String");
 	    	firstrun = getPreference("firstrun", "boolean");
@@ -71,10 +76,6 @@ var Version = {
                 this.setVersion(current);
 		    }
 	    }
-        mrLogger.debug(this.getDBVersion() + "-" + current);
-        if(this.getDBVersion() == null || this.getDBVersion() != current){
-            MRData.createDB();
-            this.setVersion(current);
-        }
+
     }
 };
