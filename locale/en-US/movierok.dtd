@@ -25,7 +25,7 @@
 <!ENTITY  settings.updateAfter          "minutes in Idle">
 <!ENTITY  settings.autoUpdate           "Auto Update">
 <!ENTITY  movierok.md5Title             "movierok md5 checksums">
-<!ENTITY  movierok.md5Info              "movierok has found $1 parts of which it doesn't know their md5 checksums yet. Creating the checksums may take some time.">
+<!ENTITY  movierok.md5Info              "movierok has found $1 parts of which it doesn't yet know their md5 checksums. Creating the checksums may take some time.">
 <!ENTITY  movierok.md5CancelBefore      "You can cancel this progress by clicking on the">
 <!ENTITY  movierok.md5CancelAfter       "cancel button on the statusbar.">
 <!ENTITY  movierok.md5RescanBefore      "The progress will proceed during the next">
