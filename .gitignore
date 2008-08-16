@@ -2,4 +2,5 @@
 build.xml
 dist
 dist/*
+update.rdf
 
