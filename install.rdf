@@ -4,7 +4,7 @@
 		xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
 	<Description about="urn:mozilla:install-manifest">
-		<em:name>movierok Extension</em:name>
+		<em:name>movierok</em:name>
 		<em:version>0.1.6</em:version>
 		<em:updateURL>http://movierok.org/update.rdf</em:updateURL>
 		<em:description>Organize your movies with movierok</em:description>
