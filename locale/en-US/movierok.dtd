@@ -8,14 +8,13 @@
 ************************************************************************** -->
 
 <!ENTITY  movierok.Movierok             "movierok">
-<!ENTITY  movierok.Website              "movierok.org Website...">
-<!ENTITY  movierok.Settings             "Settings">
+<!ENTITY  movierok.Website              "movierok.org website...">
+<!ENTITY  movierok.Settings             "Settings...">
 <!ENTITY  movierok.MenuItem             "movierok">
-<!ENTITY  movierok.Rescan               "Rescan moviedirs...">
+<!ENTITY  movierok.Rescan               "Rescan moviedirs">
 <!ENTITY  movierok.DisableMovierok      "Disable movierok">
-<!ENTITY  movierok.StopParser           "Stop rescan">
+<!ENTITY  movierok.StopParser           "cancel process">
 <!ENTITY  settings.title                "movierok Settings">
-<!ENTITY  settings.description          "movierok Settings">
 <!ENTITY  settings.movieDirs            "Folders">
 <!ENTITY  settings.movieDirsHelp        "Add your movie folders here and let movierok parse them.">
 <!ENTITY  settings.addMovieDir          "Add">
