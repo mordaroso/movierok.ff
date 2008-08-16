@@ -22,8 +22,7 @@
     
     width="550px" 
     height="170px"
-	persist="screenX screenY"
-	windowtype="mr:settings">
+	persist="screenX screenY">
 
 	<script type="application/x-javascript" src="lib.js"/>
 	<script type="application/x-javascript" src="md5.js"/>

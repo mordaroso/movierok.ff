@@ -19,7 +19,7 @@
 	ondialogcancel="delayedAction = 'cancelDialog';"
 	buttons="accept,cancel"
 	width="500px"
-	height="470px"
+	height="370px"
 
 	persist="screenX screenY"
 	windowtype="mr:settings">
