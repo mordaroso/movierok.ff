@@ -18,8 +18,8 @@
 	ondialogaccept="delayedAction = 'acceptDialog'; applyChanges()"
 	ondialogcancel="delayedAction = 'cancelDialog';"
 	buttons="accept,cancel"
-	width="300px"
-	height="400px"
+	width="500px"
+	height="470px"
 
 	persist="screenX screenY"
 	windowtype="mr:settings">
@@ -30,24 +30,24 @@
 	<script type="application/x-javascript" src="settings.js"/>
 
 	<menupopup id="listmenu">
-		<menuitem label="&settings.addMovieDir;" class="menuitem-iconic" oncommand="addMovieDir();" image="chrome://movierok/skin/folder_add.png"/>
-		<menuitem label="&settings.removeMovieDir;" class="menuitem-iconic" oncommand="removeMovieDir();" image="chrome://movierok/skin/folder_delete.png"/>
+		<menuitem label=" &settings.addMovieDir;" class="menuitem-iconic" oncommand="addMovieDir();" image="chrome://movierok/skin/folder_add.png"/>
+		<menuitem label=" &settings.removeMovieDir;" class="menuitem-iconic" oncommand="removeMovieDir();" image="chrome://movierok/skin/folder_delete.png"/>
 	</menupopup>
 
 	<groupbox id="gboxMoviedirs">
-		<caption label="&settings.movieDirs;"  image="chrome://movierok/skin/folder.png"/>
+		<caption label=" &settings.movieDirs;"  image="chrome://movierok/skin/folder.png"/>
 		<hbox id="hboxMoviedirs">
-			<listbox id="moviedirList" context="listmenu" seltype="single"  style="width:350px"/>
+			<listbox id="moviedirList" context="listmenu" seltype="single" rows="5" style="width:350px"/>
 			<vbox id="moviedircontrol">
-				<button id="btnAdd" align="left" label="&settings.addMovieDir;" oncommand="addMovieDir();" image="chrome://movierok/skin/folder_add.png"/>
-				<button id="btnRemove" align="left" label="&settings.removeMovieDir;" oncommand="removeMovieDir();" image="chrome://movierok/skin/folder_delete.png"/>
+				<button id="btnAdd" align="left" label=" &settings.addMovieDir;" oncommand="addMovieDir();" image="chrome://movierok/skin/folder_add.png"/>
+				<button id="btnRemove" align="left" label=" &settings.removeMovieDir;" oncommand="removeMovieDir();" image="chrome://movierok/skin/folder_delete.png"/>
 			</vbox>
 		</hbox>
         <label value="&settings.movieDirsHelp;" />
 	</groupbox>
 
     <groupbox id="gboxPlayer">
-		<caption label="&settings.moviePlayer;" image="chrome://movierok/skin/film_go.png"/>
+		<caption label=" &settings.moviePlayer;" image="chrome://movierok/skin/film_go.png"/>
 		<hbox id="hboxPlayer" align="center">
 			<label value="&settings.pathToPlayer;" control="movieplayer"  style="vertical-align:middle;width:80px"/>
 			<textbox id="movieplayer"  style="width:300px"/>
@@ -55,7 +55,7 @@
     </groupbox>
 
 	<groupbox id="gboxUpdate">
-        <caption label="&settings.autoUpdate;" image="chrome://movierok/skin/time.png"/>
+        <caption label=" &settings.autoUpdate;" image="chrome://movierok/skin/time.png"/>
         <checkbox id="enableUpdate" label="Activated" oncommand="refreshUpdate();"/>
         <hbox id="hboxUpdate" align="center">
 			<label id="lblUpdateBefore" value="&settings.updateBefore;" control="idleTime"   disabled="true"/>

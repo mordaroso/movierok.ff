@@ -56,7 +56,7 @@
         <statusbarpanel id="mrStatusBar1">
 		    <!-- info -->
 		    <label id="mrInfo" />
-            <image id="mrStopParser1" src="chrome://movierok/skin/cancel.png" onmousedown="MovierokChrome.stopParser();" style="cursor:pointer"/>
+            <image id="mrStopParser1" src="chrome://movierok/skin/cancel.png" onmousedown="MovierokChrome.stopParser();" style="cursor:pointer" tooltiptext="&movierok.StopParser;"/>
 		    <!-- progress -->
 		    <progressmeter id="mrProgress" mode="undetermined"/>
         </statusbarpanel>

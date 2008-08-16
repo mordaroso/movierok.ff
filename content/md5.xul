@@ -19,7 +19,9 @@
 	ondialogaccept="delayedAction = 'acceptDialog'; ok()"
 
 	buttons="accept"
-
+    
+    width="550px" 
+    height="170px"
 	persist="screenX screenY"
 	windowtype="mr:settings">
 

@@ -251,7 +251,7 @@ var MovierokChrome = {
 		}
 	},
 	showSettings : function() {
-		var config = window.open("chrome://movierok/content/settings.xul", "mr_settings","dialog, width=500px, height=500px");
+		var config = window.open("chrome://movierok/content/settings.xul", "mr_settings","dialog, width=500px, height=370px");
 	},
     stopParser : function () {
         if (parser.status != 'ready')

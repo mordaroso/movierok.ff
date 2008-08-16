@@ -529,7 +529,7 @@ DirParser.prototype = {
             if(this.pendingMD5 > 0){
                 var params = {nbrOfMD5:this.pendingMD5};
                 if(getPreference("showMD5Popup", "boolean") == true){
-                    window.openDialog("chrome://movierok/content/md5.xul", "", "dialog, chrome, width=550px, height=200px", params).focus();
+                    window.openDialog("chrome://movierok/content/md5.xul", "", "dialog, chrome, width=550px, height=170px", params).focus();
                 }
                 for (var i in parts) {
 				    var vars = new Array(parts[i].mrokhash);
