@@ -261,7 +261,7 @@ var MovierokChrome = {
 		this.doParse(false, new Array("0","1","2"));
 	},
 	rescan : function() {
-		this.doParse(true, new Array("0","1","2","3","4"));
+		this.doParse(true, new Array("0","1","2","3"));
 	},
 	doParse : function(sync, tasks) {
 		if (parser.status == 'ready') {
