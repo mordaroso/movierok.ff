@@ -5,7 +5,7 @@
 
 	<Description about="urn:mozilla:install-manifest">
 		<em:name>movierok</em:name>
-		<em:version>0.1.9</em:version>
+		<em:version>0.2</em:version>
 		<em:updateURL>http://movierok.org/update.rdf</em:updateURL>
 		<em:description>Organize your movies with movierok</em:description>
 		<em:creator>movierok team</em:creator>
