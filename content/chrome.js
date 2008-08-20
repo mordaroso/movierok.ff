@@ -8,7 +8,6 @@
 // *******************************************************************************
 
 var change_intervall = null;
-var events = new Array();
 var mrLogger;
 var idleObserver;
 var idleTime;
@@ -37,10 +36,12 @@ function initMovierokEvents() {
 		idleService.removeIdleObserver(idleObserver, idleTime);
 		idleObserver = null
 	}
-	if (getPreference("enabled", "boolean") == true) {
-		window.addEventListener("DOMContentLoaded", pageShow, true);
-		mrLogger.debug("loaded content event");
-		if (getPreference("autoUpdate", "boolean") == true) {
+
+	window.addEventListener("DOMContentLoaded", pageShow, true);
+	mrLogger.debug("loaded content event");
+
+	if (getPreference("enabled", "boolean")) {
+		if (getPreference("autoUpdate", "boolean")) {
 			idleTime = getPreference("idleTime", "int") * 60;
 			idleObserver = {
 				observe : function(subject, topic, data) {
@@ -60,23 +61,27 @@ function pageShow(event) {
 		var remote = getPreference("remoteHost", "String");
 		if (doc.location.host == remote) {
 			mrLogger.debug("remote page visited");
-			changePlayLinks(doc);
-			changeToMRokHash(doc);
-			var rips = doc.getElementById("rips");
-			if (rips)
-				events.push(rips.addEventListener("DOMNodeInserted",
-						changeByEvent, true));
-			var captions = doc.getElementById("captions");
-			if (captions)
-				events.push(captions.addEventListener("DOMNodeInserted",
-						changeByEvent, true));
+            setExtensionMetaTag(doc);
+            if (getPreference("enabled", "boolean")) {
+			    changePlayLinks(doc);
+			    changeToMRokHash(doc);
+			    var rips = doc.getElementById("rips");
+			    if (rips)
+			    	rips.addEventListener("DOMNodeInserted",
+			    			changeByEvent, true);
+			    var captions = doc.getElementById("captions");
+			    if (captions)
+		    		captions.addEventListener("DOMNodeInserted",
+				    		changeByEvent, true);
 
-			if (doc.getElementById("unknown_parts"))
-				init_omdb_suggest()
+			    if (doc.getElementById("unknown_parts"))
+			    	init_omdb_suggest()
+            }
 		}
 	} catch (exc) {
 	}
 }
+
 function changeByEvent(event) {
 	if (change_intervall != null) {
 		window.clearInterval(change_intervall);
@@ -84,6 +89,19 @@ function changeByEvent(event) {
 	}
 	change_intervall = window.setInterval("changePlayLinks()", 50);
 }
+
+function setExtensionMetaTag(doc){
+    if (doc == null) {
+		doc = window.content.document;
+	}
+    var head = doc.getElementsByTagName("head")[0];
+    var meta = doc.createElement('meta');
+    head.appendChild(meta);
+	meta.setAttribute('name', 'movierok.ff');
+    meta.setAttribute('content', Version.getExtensionVersion());
+
+}
+
 function changePlayLinks(doc) {
 	if (doc == null) {
 		doc = window.content.document;
@@ -94,10 +112,28 @@ function changePlayLinks(doc) {
 	}
 	var elements = getElementsByClassName(doc, '*', 'play_link');
 	var i = 0;
+    var found = false;
 	for (; i < elements.length; i++) {
-		appendPlayButton(elements[i]);
+		if(appendPlayButton(elements[i]))
+            found = true;
 	}
-	mrLogger.debug(i + " play buttons added");
+    mrLogger.debug(i + " play buttons added");
+    if(found){
+        showWhenAtExtension(doc);
+    }
+
+}
+
+function showWhenAtExtension(doc) {
+	if (doc == null) {
+		doc = window.content.document;
+	}
+	var elements = getElementsByClassName(doc, '*', 'only_when_owner');
+	var i = 0;
+	for (; i < elements.length; i++) {
+		removeClassName(elements[i], "only_when_owner");
+	}
+	mrLogger.debug(i + "'only_when_owner' showed");
 }
 
 function changeToMRokHash(doc) {
@@ -127,6 +163,7 @@ function appendFileName(element) {
 function appendPlayButton(element) {
 	var mrokhashes = element.innerHTML;
 	var filter = /^[a-zA-Z0-9\+]*$/;
+    var found = false;
 	if (filter.test(mrokhashes)) {
 		var sums = mrokhashes.split('+');
 
@@ -136,10 +173,11 @@ function appendPlayButton(element) {
 						+ "' title='play' >&nbsp;</a>";
 				element.style.display = 'inline';
 				element.addEventListener("click", play, true);
-				break;
+                found = true;
 			}
 		}
 	}
+    return found;
 }
 
 var last_played

@@ -62,6 +62,11 @@ getElementsByClassName = function(oElm, strTagName, strClassName) {
 	return (arrReturnElements)
 };
 
+removeClassName = function(element, className){
+    element.className = element.className.replace(className, ' ');
+    return element;
+}
+
 launchProgram = function(exePath, arguments) {
 	try {
 		// create an nsILocalFile for the executable
