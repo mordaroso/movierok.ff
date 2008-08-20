@@ -20,12 +20,13 @@ var DirParser = function() {
 	this.sync = false;
 	this.moviedirs = null;
 	this.metaDataArray;
-	this.totalSteps;
-	this.finishedSteps;
+	this.totalSteps = new Array(0);
+	this.finishedSteps = new Array(0);
     this.pendingMD5 = null;
     this.tasks = new Array();
     this.doneTasks = 0;
     this.thread = null;
+    this.mainThread = null;
 }
 DirParser.prototype = {
 	stop : function() {
@@ -94,43 +95,50 @@ DirParser.prototype = {
         var task = this.tmp[0];
         mrLogger.debug("end task: #"+task);
         this.doneTasks++;
+        this.totalSteps[this.doneTasks] = 2;
+        this.finishedSteps[this.doneTasks] = 0;
         this.updatePercentage();
 
         if(this.doneTasks == this.tasks.length)
             this.stop();
-
     },
     updatePercentage : function(){
-        var nbrOfSteps = this.totalSteps-this.tasks.length;
-        var maxPercentageInStep = (100/this.tasks.length)*this.doneTasks;
-        MovierokChrome.setPercent(Math.floor(maxPercentageInStep / nbrOfSteps
-            * this.finishedSteps));
+        var nbrOfSteps = this.totalSteps[this.doneTasks];
+        var doneSteps = this.finishedSteps[this.doneTasks];
+        var maxPercentageInStep = 100/this.tasks.length;
+        var donePercentageInSteps = (100/this.tasks.length)*(this.doneTasks);
+        mrLogger.error(this.doneTasks+ "\n" +maxPercentageInStep+"."+donePercentageInSteps + "\n"+doneSteps+"."+nbrOfSteps+"\n " +(donePercentageInSteps + Math.floor(maxPercentageInStep / nbrOfSteps  * doneSteps)));
+        MovierokChrome.setPercent(donePercentageInSteps + Math.floor(maxPercentageInStep / nbrOfSteps
+            * doneSteps));
     },
 	start : function() {
 		MovierokChrome.setStatus("parsing");
         mrLogger.info("Start dirparser...");
 		this.steps = new Array();
 		this.stepVars = new Array();
-		this.totalSteps = 0;
-		this.finishedSteps = 0;
+		this.totalSteps = new Array();
+		this.finishedSteps = new Array();
         this.doneTasks = 0;
 
         for (var i in this.tasks){
             var task = new Array(this.tasks[i]);
             this.addStep("this.startTask()", task);
             this.addStep("this.endTask()", task);
-        }
+        }
+
+        this.totalSteps[this.doneTasks] = 0;
+        this.finishedSteps[this.doneTasks] = 0;
 		this.stepInterval = window.setInterval("parser.doNextStep()", 10);
 	},
 	addStep : function(step, vars) {
 		this.steps.push(step);
 		this.stepVars.push(vars);
-		this.totalSteps++;
+		this.totalSteps[this.doneTasks]++;
 	},
 	setNextStep : function(step, vars) {
 		this.stepVars.unshift(vars);
 		this.steps.unshift(step);
-		this.totalSteps++;
+		this.totalSteps[this.doneTasks]++;
 	},
 	doNextStep : function() {
 		if (this.running || this.thread != null)
@@ -141,13 +149,14 @@ DirParser.prototype = {
 				var step = this.steps[0];
 				this.tmp = this.stepVars[0];
 				this.steps.shift();
-				this.stepVars.shift();
-
+				this.stepVars.shift();
 				eval(step);
 
-				this.running = false;
-				this.finishedSteps++;
-                this.updatePercentage();
+                if(this.status != 'ready'){
+    				this.finishedSteps[this.doneTasks]++;
+                    this.updatePercentage();
+                }
+                this.running = false;
 			} catch (exc) {
 				mrLogger.error(exc);
 				this.stop();
@@ -549,14 +558,18 @@ DirParser.prototype = {
 	        infotext = infotext.replace(/\$\d/g, this.pendingMD5);
 		    MovierokChrome.setText(infotext);
             this.thread = Components.classes["@mozilla.org/thread-manager;1"].getService().newThread(0);
-            var main = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
-            this.thread.dispatch(new md5Thread(this.pendingMD5, part, main, this.thread), this.thread.DISPATCH_NORMAL);
+            if (this.mainThread == null)
+                this.mainThread = Components.classes["@mozilla.org/thread-manager;1"].getService().mainThread;
+            this.thread.dispatch(new md5Thread(this.pendingMD5, part, this.mainThread, this.thread), this.thread.DISPATCH_NORMAL);
             this.pendingMD5--;
         }
 
     },
     sendMD5 : function (md5, threadId, mrokhash) {
-	    this.thread = null;
+        if(this.thread != null){
+            this.thread.shutdown();
+            this.thread = null;
+        }
 	    var xmlText = "<parts>";
 	    xmlText += "<part>";
 	    xmlText += "<mrokhash>"+mrokhash+"</mrokhash>";
