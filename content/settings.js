@@ -78,7 +78,7 @@ function addMovieDir() {
 	const nsIFilePicker = Components.interfaces.nsIFilePicker;
 	var fp = Components.classes["@mozilla.org/filepicker;1"]
 			.createInstance(Components.interfaces.nsIFilePicker);
-	fp.init(window, "Choose MovieDir", nsIFilePicker.modeGetFolder);
+	fp.init(window, "select your movie folder", nsIFilePicker.modeGetFolder);
 	fp.appendFilters(nsIFilePicker.filterAll);
 
 	var rv = fp.show();
