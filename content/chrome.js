@@ -95,10 +95,19 @@ function setExtensionMetaTag(doc){
 		doc = window.content.document;
 	}
     var head = doc.getElementsByTagName("head")[0];
-    var meta = doc.createElement('meta');
-    head.appendChild(meta);
-	meta.setAttribute('name', 'movierok.ff');
-    meta.setAttribute('content', Version.getExtensionVersion());
+    // version meta tag
+    var metaVersion = doc.createElement('meta');
+    head.appendChild(metaVersion);
+	metaVersion.setAttribute('name', 'movierok.ff.version');
+    metaVersion.setAttribute('content', Version.getExtensionVersion());
+    // status meta tag
+    var status = "on";
+    if(!getPreference("enabled", "boolean"))
+      status = "off";
+    var metaStatus = doc.createElement('meta');
+    head.appendChild(metaStatus);
+	metaStatus.setAttribute('name', 'movierok.ff.status');
+    metaStatus.setAttribute('content', status);
 
 }
 
