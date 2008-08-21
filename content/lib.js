@@ -288,3 +288,9 @@ openUrlToNewTab = function (url) {
     var newTab = browser.addTab(url);
     browser.selectedTab = newTab;
 }
+
+hasClassName =  function(element, className) {
+    var elementClassName = element.className;
+    return (elementClassName.length > 0 && (elementClassName == className ||
+      new RegExp("(^|\\s)" + className + "(\\s|$)").test(elementClassName)));
+}

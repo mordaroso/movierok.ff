@@ -112,13 +112,13 @@ function changePlayLinks(doc) {
 	}
 	var elements = getElementsByClassName(doc, '*', 'play_link');
 	var i = 0;
-    var found = false;
+    var found_main = false;
 	for (; i < elements.length; i++) {
 		if(appendPlayButton(elements[i]))
-            found = true;
+            found_main = true;
 	}
     mrLogger.debug(i + " play buttons added");
-    if(found){
+    if(found_main){
         showWhenOwner(doc);
     }
 
@@ -163,21 +163,22 @@ function appendFileName(element) {
 function appendPlayButton(element) {
 	var mrokhashes = element.innerHTML;
 	var filter = /^[a-zA-Z0-9\+]*$/;
-    var found = false;
+    var is_main = false;
 	if (filter.test(mrokhashes)) {
 		var sums = mrokhashes.split('+');
 
 		for (var i = 0; i < sums.length; i++) {
 			if (PartController.findByMRokHash(sums[i]) != null) {
-				element.innerHTML = "<a href='#' alt='" + mrokhashes
+				if(hasClassName(element, "main_rip"))
+                  is_main = true;
+                element.innerHTML = "<a href='#' alt='" + mrokhashes
 						+ "' title='play' >&nbsp;</a>";
 				element.style.display = 'inline';
 				element.addEventListener("click", play, true);
-                found = true;
 			}
 		}
 	}
-    return found;
+    return is_main;
 }
 
 var last_played
