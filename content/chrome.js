@@ -119,16 +119,16 @@ function changePlayLinks(doc) {
 	}
     mrLogger.debug(i + " play buttons added");
     if(found){
-        showWhenAtExtension(doc);
+        showWhenOwner(doc);
     }
 
 }
 
-function showWhenAtExtension(doc) {
+function showWhenOwner(doc) {
 	if (doc == null) {
 		doc = window.content.document;
 	}
-	var elements = getElementsByClassName(doc, '*', 'only_when_owner');
+	var elements = getElementsByClassName(doc, '*', "only_when_owner");
 	var i = 0;
 	for (; i < elements.length; i++) {
 		removeClassName(elements[i], "only_when_owner");
