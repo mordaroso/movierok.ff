@@ -1,30 +1,22 @@
 <?xml version="1.0"?>
-
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-		xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-
-	<Description about="urn:mozilla:install-manifest">
-		<em:name>movierok</em:name>
-		<em:version>0.2</em:version>
-		<em:updateURL>http://movierok.org/update.rdf</em:updateURL>
-		<em:description>Organize your movies with movierok</em:description>
-		<em:creator>movierok team</em:creator>
-		<em:id>extension@movierok.org</em:id>
-		
-		<em:targetApplication>
-			<Description>
-				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>2.0.*</em:minVersion>
-				<em:maxVersion>3.0.*</em:maxVersion>
-			</Description>
-		</em:targetApplication>
-		
-
-		<em:iconURL>chrome://movierok/skin/icon.png</em:iconURL>
-		<em:homepageURL>http://movierok.org/</em:homepageURL>
-		<em:optionsURL>chrome://movierok/content/settings.xul</em:optionsURL>
-		
-		<em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVxA+6i7kByKxossOpVefUkcCk5jYq1DUQuT24KC9D7X8yvtIU/dK2V6AClxujUVeEP7c9CMzkbfvR9SEUa3rwfMoI7Yg9ejHfOetnmEvOYIIMSHLY9CXqZaCO4S/9V9QKq69Z426vq7xK8DPItpjEdO1L/Pc2u8BStsLye2gtIQIDAQAB</em:updateKey>
-		
-	</Description>
-</RDF>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="urn:mozilla:install-manifest"
+                   em:name="movierok"
+                   em:version="0.2.1.1"
+                   em:updateURL="http://movierok.org/update.rdf"
+                   em:description="Organize your movies with movierok"
+                   em:creator="movierok team"
+                   em:id="extension@movierok.org"
+                   em:iconURL="chrome://movierok/skin/icon.png"
+                   em:homepageURL="http://movierok.org/"
+                   em:optionsURL="chrome://movierok/content/settings.xul"
+                   em:updateKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCz+7UTq9tB1LfYcYdU885xqqIn+O6wcg6/R+29TaAg7tR6ILOzbRoulcmFX9xxn92GHWKMcxT4vtWFc+8LEdIm2ZSPn1XM3+4aMOgzXrtiJTN/GWpmYvxad3iZcTDHd5YCjcg7sfTE699Bd11iLJmezwF8Qn/zp62eMm5WprFzUwIDAQAB">
+    <em:targetApplication RDF:resource="rdf:#$s.C2z1"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$s.C2z1"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="3.0"
+                   em:maxVersion="3.0.*" />
+</RDF:RDF>
