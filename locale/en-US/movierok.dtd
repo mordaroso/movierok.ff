@@ -11,7 +11,7 @@
 <!ENTITY  movierok.Website              "movierok.org website...">
 <!ENTITY  movierok.Settings             "Settings...">
 <!ENTITY  movierok.MenuItem             "movierok">
-<!ENTITY  movierok.Rescan               "Rescan moviedirs">
+<!ENTITY  movierok.Rescan               "Rescan movie folders">
 <!ENTITY  movierok.DisableMovierok      "Disable movierok">
 <!ENTITY  movierok.StopParser           "cancel process">
 <!ENTITY  settings.title                "movierok Settings">
