@@ -13,8 +13,8 @@ function init_omdb_suggest() {
     omdb_suggestor = new OMDBSuggestor()
     var omdb_search_form = window.content.document.getElementById("omdb_search_form")
     if (omdb_search_form) {
-        events.push(omdb_search_form.addEventListener("DOMAttrModified", omdb_suggest, true))
-        events.push(omdb_search_form.addEventListener("submit", omdb_suggest, false))
+        omdb_search_form.addEventListener("DOMAttrModified", omdb_suggest, true)
+        omdb_search_form.addEventListener("submit", omdb_suggest, false)
         if(omdb_suggestor.doc.getElementById('editing_rip_title')) {
             omdb_suggestor.doc.getElementById('omdb_search_field').value = omdb_suggestor.doc.getElementById('editing_rip_title').innerHTML
             omdb_suggestor.suggest()
