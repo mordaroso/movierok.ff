@@ -23,6 +23,14 @@ isJSON = function(str) {
 
 }
 
+isValidForXML = function(str) {
+  if (str == null)
+    return false;
+	if (/^\s*$/.test(str))
+		return false;
+	return /^[\sA-Za-z0-9\\\/\-\$\^\*\(\)\+_!&%@#]*$/.test(str);
+}
+
 getChildNodes = function(element) {
 	var jj = 0;
 	var results = new Array;

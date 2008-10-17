@@ -432,41 +432,42 @@ DirParser.prototype = {
 					var check_sum = this.metaDataArray[count][0];
 					var mfile = this.metaDataArray[count][1];
 					xmlText += "<part>";
+
+          // MISC
 					xmlText += "<mrokhash>" + check_sum + "</mrokhash>";
 
-                    // CONTAINER
-						xmlText += "<container>" + mfile.container
-								+ "</container>";
+          if (isValidForXML(mfile.container))
+					  xmlText += "<container>" + mfile.container
+								     + "</container>";
+          if(isValidForXML(mfile.duration) && mfile.duration != 0)
+					  xmlText += "<duration>" + mfile.duration
+                     + "</duration>";
 
-                    // VIDEO
-                    if (mfile.video_encoding != null)
+          // VIDEO
+          if (isValidForXML(mfile.video_encoding))
 						xmlText += "<video_encoding>" + mfile.video_encoding
-								+ "</video_encoding>";
-                    if (mfile.video_framerate != null)
-						xmlText += "<video_frame_rate>" + mfile.video_framerate
-								+ "</video_frame_rate>";
-                    if (mfile.video_resolution != null)
-						xmlText += "<video_resolution>"
-								+ mfile.video_resolution
-								+ "</video_resolution>";
+								     + "</video_encoding>";
+          if (isValidForXML(mfile.video_framerate))
+					 xmlText += "<video_frame_rate>" + mfile.video_framerate
+						       + "</video_frame_rate>";
+          if (isValidForXML(mfile.video_resolution))
+				    xmlText += "<video_resolution>" + mfile.video_resolution
+							      + "</video_resolution>";
 
-                    // AUDIO
-					if (mfile.audio_encoding != null)
+          // AUDIO
+					if (isValidForXML(mfile.audio_encoding))
 						xmlText += "<audio_encoding>" + mfile.audio_encoding
-								+ "</audio_encoding>";
-                    if (mfile.audio_bitrate != null)
-                        xmlText += "<audio_bit_rate>" + mfile.audio_bitrate
-								+ "</audio_bit_rate>";
-                    if (mfile.audio_sample_rate != null)
-                        xmlText += "<audio_sample_rate>"
-								+ mfile.audio_sample_rate
-								+ "</audio_sample_rate>";
-                    if (mfile.audio_channels != null)
+								     + "</audio_encoding>";
+          if (isValidForXML(mfile.audio_bitrate))
+            xmlText += "<audio_bit_rate>" + mfile.audio_bitrate
+					           + "</audio_bit_rate>";
+          if (isValidForXML(mfile.audio_sample_rate))
+            xmlText += "<audio_sample_rate>" + mfile.audio_sample_rate
+								     + "</audio_sample_rate>";
+          if (isValidForXML(mfile.audio_channels))
 						xmlText += "<audio_channels>" + mfile.audio_channels
-								+ "</audio_channels>";
+								     + "</audio_channels>";
 
-                    if(mfile.duration != null && mfile.duration != 0)
-					    xmlText += "<duration>" + mfile.duration + "</duration>";
 					xmlText += "<filesize>" + mfile.size + "</filesize>";
 					xmlText += "</part>";
 				}
