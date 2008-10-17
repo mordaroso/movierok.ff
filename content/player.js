@@ -44,8 +44,12 @@ var Player = {
 	getWinNtPlayers : function() {
 		var players = new Array();
 		// Priority in order of appearance
-		players.push("C:\\Program Files\\VideoLAN\\VLC\\vlc.exe");
-		players.push("C:\\Program Files\\Windows Media Player\\wmplayer.exe");
+    var program_folder = Components.classes["@mozilla.org/file/directory_service;1"]
+                     .getService(Components.interfaces.nsIProperties)
+                     .get("ProgF", Components.interfaces.nsIFile);
+
+		players.push(program_folder.path+"\\VideoLAN\\VLC\\vlc.exe");
+		players.push(program_folder.path+"\\Windows Media Player\\wmplayer.exe");
 		// TODO add more programs
 		return players;
 	},
