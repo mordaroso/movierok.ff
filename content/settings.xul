@@ -50,7 +50,8 @@
 		<caption label=" &settings.moviePlayer;" image="chrome://movierok/skin/film_go.png"/>
 		<hbox id="hboxPlayer" align="center">
 			<label value="&settings.pathToPlayer;" control="movieplayer"  style="vertical-align:middle;width:80px"/>
-			<textbox id="movieplayer"  style="width:300px"/>
+			<textbox id="movieplayer"  style="width:250px"/>
+      <button id="btnSelect" align="left" label=" &settings.selectMoviePlayer;" oncommand="selectPlayer();" image="chrome://movierok/skin/folder_explore.png" />
 		</hbox>
     </groupbox>
 

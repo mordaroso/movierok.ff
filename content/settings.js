@@ -57,7 +57,7 @@ function applyChanges() {
 		}
 		// player
         var movieplayer = document.getElementById("movieplayer");
-		setPreference("player", movieplayer.value, "String");
+		    setPreference("player", movieplayer.value, "String");
 
         // autoupdate
         var enableUpdates = document.getElementById("enableUpdate");
@@ -103,6 +103,28 @@ function refreshUpdate(){
     document.getElementById("lblUpdateBefore").disabled = !enableUpdates.checked;
     document.getElementById("idleTime").disabled = !enableUpdates.checked;
     document.getElementById("lblUpdateAfter").disabled = !enableUpdates.checked;
+}
 
+function selectPlayer() {
+  var nsIFilePicker = Components.interfaces.nsIFilePicker;
+  var fp = Components.classes["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
 
+  fp.init(window, "Select Player", nsIFilePicker.modeOpen);
+  var osString = Components.classes["@mozilla.org/xre/app-info;1"]
+				.getService(Components.interfaces.nsIXULRuntime).OS;
+
+  if (osString == "WINNT") { // Windows
+    // set directory
+    var program_folder = Components.classes["@mozilla.org/file/directory_service;1"]
+                     .getService(Components.interfaces.nsIProperties)
+                     .get("ProgF", Components.interfaces.nsIFile);
+    fb.displayDirectory = program_folder
+  }
+  fp.appendFilters(nsIFilePicker.filterApps | nsIFilePicker.filterAll); // Apps or all
+  var res = fp.show();
+
+  if (res == nsIFilePicker.returnOK) {
+    var thefile = fp.file;
+    document.getElementById("movieplayer").value = thefile.path;
+  }
 }

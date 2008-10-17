@@ -91,8 +91,7 @@ launchProgram = function(exePath, arguments) {
 		process.run(false, args, args.length);
 
 		return true;
-	} catch (exc) {
-		alert(exc);
+	} catch (exc) {
 	}
 	return false;
 };

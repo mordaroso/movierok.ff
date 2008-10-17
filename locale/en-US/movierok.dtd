@@ -19,6 +19,7 @@
 <!ENTITY  settings.movieDirsHelp        "Add your movie folders here and let movierok parse them.">
 <!ENTITY  settings.addMovieDir          "Add">
 <!ENTITY  settings.removeMovieDir       "Remove">
+<!ENTITY  settings.selectMoviePlayer    "Choose">
 <!ENTITY  settings.moviePlayer          "Movie Player">
 <!ENTITY  settings.pathToPlayer         "Path to Player:">
 <!ENTITY  settings.updateBefore         "Update my rips after">

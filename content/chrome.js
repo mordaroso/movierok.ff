@@ -198,6 +198,7 @@ function play(event) {
 		return false
 	last_played = new Date().getTime()
 
+  // get parts by mrokhash
 	var mrokhashes = event.currentTarget.lastChild.getAttribute("alt");
 	var sums = mrokhashes.split('+');
 	var arguments = new Array();
@@ -207,11 +208,17 @@ function play(event) {
 			arguments.push(part.path);
 		}
 	}
+
 	var player = getPreference("player", "String");
-
-	launchProgram(player, arguments);
-	mrLogger.debug(arguments + " played");
-
+  if (launchProgram(player, arguments)){
+    // successuflly started
+	  mrLogger.debug(arguments + " played");
+  }else{
+    // error while starting player
+    mrLogger.error('Could not play rip')
+    alert('Please select a valid movie player in your movierok settings.');
+    MovierokChrome.showSettings();
+  }
 }
 
 var MovierokChrome = {
