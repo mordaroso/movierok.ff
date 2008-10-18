@@ -112,7 +112,15 @@ AVI.prototype = {
 					strf += "\ncbSize: " + cbSize;
 
 					this.mstream.skip(chunk_size - 18);
-				} else {
+				} else if (this.lastType == "vids") {
+					var biSize = this.mstream.readLittleEndianInt();
+          var biWidth = this.mstream.readLittleEndianInt();
+          var biHeight = this.mstream.readLittleEndianInt();
+          var biBitCount = this.mstream.readLittleEndianInt();
+          var biCompression = this.mstream.readString(4);
+          this.video_encoding = biCompression;
+					this.mstream.skip(chunk_size - 20);
+        } else {
 					//mrLogger.debug("skip " + chunk_size);
 					this.mstream.skip(chunk_size);
 				}
